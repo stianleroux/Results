@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
         <LangVersion>preview</LangVersion>
+        <EnablePackageValidation>true</EnablePackageValidation>
         <Nullable>enable</Nullable>
         <PublishReadyToRun>true</PublishReadyToRun>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -14,6 +15,7 @@
         <RepositoryUrl>https://github.com/stianleroux/Results</RepositoryUrl>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <Version>1.0.0</Version>
+        <Authors>Stian Le Roux</Authors>
         <NoWarn>7035</NoWarn>
     </PropertyGroup>
 
