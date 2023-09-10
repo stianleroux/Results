@@ -10,7 +10,7 @@
         <CodeAnalysisRuleSet>$(ProjectDir)..\StyleCopRuleSet.ruleset</CodeAnalysisRuleSet>
         <RootNamespace>Results</RootNamespace>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <PackageId>Results</PackageId>
+        <PackageId>SLR.Results</PackageId>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/stianleroux/Results</RepositoryUrl>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
