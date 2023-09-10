@@ -15,7 +15,7 @@ Install-Package SLR.Results
 
 ## Key Features
 
-- Works in all contexts (ASP.NET MVC/WebApi, WPF, DDD Domain Model, etc.)
+- Works in most .NET Projects
 - Choose from Result, Result<T>, ListResult<T> to cater for all use cases
 - Store **multiple errors or validation errors** in one Result object
 - Store **Error or Success objects** instead of only error messages in string format
@@ -31,7 +31,7 @@ A Result can store multiple Errors, NotFound or ValidationErrors.
 // return a result which indicates success
 return Result.Success();
 
-// return a result of an type which indicates success
+// return a result of a type which indicates success
 return Result<Sample>.Success(new Sample());
 
 //return a list result which indicates success
