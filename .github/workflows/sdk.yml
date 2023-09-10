@@ -55,5 +55,5 @@ jobs:
     - name: Pack
       run: dotnet pack Results/Results.csproj --output nuget-packages --configuration Release /p:Version=1.$(date +'%Y%m%d.%H%M%S')
     - name: Push
-      run: dotnet nuget push **/*.nupkg --skip-duplicate --source https://nuget.pkg.github.com/stianleroux/Results/index.json --api-key ${{secrets.NUGET_API_KEY}}
+      run: dotnet nuget push **/*.nupkg --skip-duplicate --source https://nuget.pkg.github.com/stianleroux/index.json --api-key ${{secrets.NUGET_API_KEY}}
 
