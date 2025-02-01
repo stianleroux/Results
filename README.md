@@ -18,7 +18,7 @@ Install-Package SLR.Results
 -   Store **Error or Success objects** instead of only error messages in string format
 -   Allows uniformity in your code or anyone that needs to consume it
 -   ApiResponseHelper to have uniform API Responses in Controllers
--   ListResult<T> has built-in capability for paging using PagingExtensions
+-   Result<List<T>> has built-in capability for paging using PagingExtensions
 
 ## Return a Result
 
