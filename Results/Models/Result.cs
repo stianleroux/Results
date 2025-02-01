@@ -14,30 +14,30 @@ public class Result
 
     public string? Message { get; set; }
 
-    public List<string> Errors { get; set; } = new List<string>();
+    public List<string> Errors { get; set; } = [];
 
-    public Dictionary<string, List<string>> ValidationErrors { get; set; } = new Dictionary<string, List<string>>();
+    public Dictionary<string, List<string>> ValidationErrors { get; set; } = [];
 
     public static Result Success() => new()
     {
         IsError = false,
-        Errors = new List<string>(),
-        ValidationErrors = new Dictionary<string, List<string>>()
+        Errors = [],
+        ValidationErrors = []
     };
 
     public static Result Success(string message) => new()
     {
         IsError = false,
         Message = message,
-        Errors = new List<string>(),
-        ValidationErrors = new Dictionary<string, List<string>>()
+        Errors = [],
+        ValidationErrors = []
     };
 
     public static Result Failure(List<string> errors) => new()
     {
         IsError = true,
         Errors = errors,
-        ValidationErrors = new Dictionary<string, List<string>>()
+        ValidationErrors = []
     };
 
     public static Result Failure(List<string> errors, string message) => new()
@@ -45,28 +45,28 @@ public class Result
         IsError = true,
         Errors = errors,
         Message = message,
-        ValidationErrors = new Dictionary<string, List<string>>()
+        ValidationErrors = []
     };
 
     public static Result Failure(string error) => new()
     {
         IsError = true,
-        Errors = new List<string>()
-        {
+        Errors =
+        [
             error,
-        },
-        ValidationErrors = new Dictionary<string, List<string>>()
+        ],
+        ValidationErrors = []
     };
 
     public static Result Failure(string error, string message) => new()
     {
         IsError = true,
         Message = message,
-        Errors = new List<string>()
-        {
+        Errors =
+        [
             error,
-        },
-        ValidationErrors = new Dictionary<string, List<string>>()
+        ],
+        ValidationErrors = []
     };
 
     public static (bool HasError, Result? ErrorResult) HasError(Result result) => result switch
@@ -88,7 +88,7 @@ public class Result
     public static Result ValidationFailure(Dictionary<string, List<string>> validationErrors) => new()
     {
         IsValidationError = true,
-        Errors = new List<string>(),
+        Errors = [],
         ValidationErrors = validationErrors
     };
 
@@ -96,7 +96,7 @@ public class Result
     {
         IsValidationError = true,
         Message = message,
-        Errors = new List<string>(),
+        Errors = [],
         ValidationErrors = validationErrors
     };
 
@@ -150,6 +150,8 @@ public class Result<T> : Result
 {
     public T? Data { get; set; }
 
+    public int Count { get; set; }
+
     public static Result<T> Success(T data, string? message = null) => new()
     {
         Data = data,
@@ -157,10 +159,18 @@ public class Result<T> : Result
         Message = message
     };
 
+    public static Result<T> Success(T data, int count, string? message = null) => new()
+    {
+        Data = data,
+        Count = count,
+        IsError = false,
+        Message = message
+    };
+
     public static new Result<T> Failure(string error, string? message = null) => new()
     {
         IsError = true,
-        Errors = new List<string> { error },
+        Errors = [error],
         Message = message
     };
 
@@ -174,7 +184,7 @@ public class Result<T> : Result
     public new Result<T> AddError(string error)
     {
         this.IsError = true;
-        this.Errors ??= new List<string>();
+        this.Errors ??= [];
         this.Errors.Add(error);
         return this;
     }
