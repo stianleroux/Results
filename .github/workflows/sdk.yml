@@ -1,53 +1,87 @@
 name: SDK
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-        steps:
-            - name: Checking out files
-              uses: actions/checkout@v2
-            - name: Setup .NET 8
-              uses: actions/setup-dotnet@v1
-              with:
-                  dotnet-version: 8.0.x
-            - name: Setup .NET 9
-              uses: actions/setup-dotnet@v1
-              with:
-                  dotnet-version: 9.0.x
-            - name: Restore dependencies
-              run: dotnet restore
-            - name: Build
-              run: dotnet build --no-restore
-            - name: Test
-              run: dotnet test --no-build --verbosity normal
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
 
-    publish:
-        name: build, pack & publish
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-dotnet@v1
-              with:
-                  dotnet-version: 8.0.x
-            - name: Setup .NET 8
-              uses: actions/setup-dotnet@v1
-              with:
-                  dotnet-version: 8.0.x
-            - name: Setup .NET 9
-              uses: actions/setup-dotnet@v1
-              with:
-                  dotnet-version: 9.0.x
-            - name: Restore dependencies
-              run: dotnet restore
-            - name: Build
-              run: dotnet build --configuration Release
-            - name: Pack
-              run: dotnet pack Results/Results.csproj --output nuget-packages --configuration Release /p:Version=1.$(date +'%Y%m%d.%H%M%S')
-            - name: Push
-              run: dotnet nuget push **/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_API_KEY}}
+      - name: Restore dependencies
+        run: dotnet restore --locked-mode
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal --configuration Release
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore dependencies
+        run: dotnet restore --locked-mode
+
+      - name: Build
+        run: dotnet build --configuration Release
+
+      - name: Get Version from Git Tags
+        id: get_version
+        run: echo "VERSION=$(git describe --tags --always --dirty)" >> $GITHUB_ENV
+
+      - name: Pack NuGet Package
+        run: dotnet pack Results/Results.csproj --output nuget-packages --configuration Release /p:Version=${{ env.VERSION }}
+
+      - name: Push NuGet Package
+        run: dotnet nuget push nuget-packages/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get Version from Git Tags
+        id: get_version
+        run: echo "VERSION=$(git describe --tags --always --dirty)" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          body: |
+            ## Changes in this release:
+            - Auto-generated release based on latest commit
+            - Version: ${{ env.VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
