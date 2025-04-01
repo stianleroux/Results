@@ -21,8 +21,19 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-
 
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install .NET 9 Preview
+        run: |
+          wget https://dotnetcli.azureedge.net/dotnet/Sdk/9.0.100-preview.7/dotnet-sdk-9.0.100-preview.7-linux-x64.tar.gz
+          mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-9.0.100-preview.7-linux-x64.tar.gz -C $HOME/dotnet
+          echo "$HOME/dotnet" >> $GITHUB_PATH
+
       - name: Restore dependencies
-        run: dotnet restore --locked-mode
+        run: dotnet restore
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
@@ -45,8 +56,19 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-
 
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install .NET 9 Preview
+        run: |
+          wget https://dotnetcli.azureedge.net/dotnet/Sdk/9.0.100-preview.7/dotnet-sdk-9.0.100-preview.7-linux-x64.tar.gz
+          mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-9.0.100-preview.7-linux-x64.tar.gz -C $HOME/dotnet
+          echo "$HOME/dotnet" >> $GITHUB_PATH
+
       - name: Restore dependencies
-        run: dotnet restore --locked-mode
+        run: dotnet restore
 
       - name: Build
         run: dotnet build --configuration Release
