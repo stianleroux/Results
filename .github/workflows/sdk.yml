@@ -5,6 +5,9 @@ on:
     branches:
       - main
   workflow_dispatch:
+  
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
 jobs:
   build:
