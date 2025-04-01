@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0; net6.0.0;net7.0.0;net8.0.0</TargetFrameworks>
-        <RuntimeFrameworkVersion>8.0.0</RuntimeFrameworkVersion>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
         <LangVersion>preview</LangVersion>
         <EnablePackageValidation>true</EnablePackageValidation>
         <Nullable>enable</Nullable>
@@ -15,19 +14,18 @@
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/stianleroux/Results</RepositoryUrl>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <Version>1.2.0</Version>
+        <Version>1.3.0</Version>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Authors>Stian Le Roux</Authors>
         <NoWarn>7035</NoWarn>
-        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="..\README.md" pack="true" PackagePath="." />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <None Include="..\README.md" pack="true" PackagePath="." />
     </ItemGroup>
 </Project>
