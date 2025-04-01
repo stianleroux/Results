@@ -119,11 +119,14 @@ jobs:
           draft: false
           prerelease: false
       
+      - name: List files in nuget-packages
+        run: ls -al ./nuget-packages/
+        
       # Upload the NuGet Package as an asset in the release
       - name: Upload NuGet Package to Release
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./nuget-packages/*.nupkg
+          asset_path: ./nuget-packages/results-${{ env.VERSION }}.nupkg 
           asset_name: results-${{ env.VERSION }}.nupkg
           asset_content_type: application/octet-stream
