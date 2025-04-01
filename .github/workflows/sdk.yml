@@ -85,27 +85,32 @@ jobs:
       - name: Push NuGet Package
         run: dotnet nuget push nuget-packages/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
 
-  release:
-    needs: publish
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    release:
+        needs: publish
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
 
-      - name: Get Version from Git Tags
-        id: get_version
-        run: echo "VERSION=$(git describe --tags --always --dirty)" >> $GITHUB_ENV
+            # Get the version from the .csproj file
+            - name: Get version from .csproj
+              id: get_version
+              run: |
+                VERSION=$(xmllint --xpath "string(//Project/PropertyGroup/Version)" Results/Results.csproj)
+                echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ env.VERSION }}
-          name: Release ${{ env.VERSION }}
-          draft: false
-          prerelease: false
-          body: |
-            ## Changes in this release:
-            - Auto-generated release based on latest commit
-            - Version: ${{ env.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            # Create GitHub Release
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v1
+              with:
+                tag_name: ${{ env.VERSION }}
+                name: Release ${{ env.VERSION }}
+                draft: false
+                prerelease: false
+                body: |
+                  ## Changes in this release:
+                  - Auto-generated release based on latest commit
+                  - Version: ${{ env.VERSION }}
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
