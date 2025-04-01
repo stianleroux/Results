@@ -3,15 +3,21 @@
 using System.Diagnostics.CodeAnalysis;
 
 [ExcludeFromCodeCoverage]
-public static class ProcessDbResult<T1>
+public static class DbResultProcessor<T>
 {
-    public static Result<T1> Outcome(T1 model, int dbRowAffected, string errorMessage = "")
-        => dbRowAffected > 0 ? Result<T1>.Success(model) : Result<T1>.Failure(string.IsNullOrEmpty(errorMessage) ? $"Error saving {typeof(T1).Name}" : errorMessage);
+    public static Result<T> Outcome(T model, int dbRowsAffected, string? errorMessage = null)
+        => dbRowsAffected > 0
+            ? Result<T>.Success(model)
+            : Result<T>.Failure(string.IsNullOrWhiteSpace(errorMessage)
+                ? $"Error saving {typeof(T).Name}"
+                : errorMessage.Trim());
 }
 
 [ExcludeFromCodeCoverage]
-public static class ProcessEFResult
+public static class EFResultProcessor
 {
-    public static Result Outcome(int dbRowAffected, string errorMessage = "")
-        => dbRowAffected > 0 ? Result.Success() : Result.Failure(errorMessage);
+    public static Result Outcome(int dbRowsAffected, string? errorMessage = null)
+        => dbRowsAffected > 0
+            ? Result.Success()
+            : Result.Failure(errorMessage?.Trim() ?? "Database operation failed.");
 }

@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0; net6.0.0;net7.0.0;net8.0.0</TargetFrameworks>
+        <RuntimeFrameworkVersion>8.0.0</RuntimeFrameworkVersion>
         <LangVersion>preview</LangVersion>
         <EnablePackageValidation>true</EnablePackageValidation>
         <Nullable>enable</Nullable>
@@ -18,13 +19,15 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Authors>Stian Le Roux</Authors>
         <NoWarn>7035</NoWarn>
+        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+        <None Include="..\README.md" pack="true" PackagePath="." />
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="..\README.md" pack="true" PackagePath="." />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 </Project>

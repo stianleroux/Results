@@ -1,54 +1,53 @@
-namespace Api.Utilities.Extensions;
+namespace Results.Extensions;
 
+using System.Collections;
 using Results.Models;
 
 public static class PagingExtensions
 {
-	public static IQueryable<T> ApplyPaging<T>(this IQueryable<T> query, Paging pagingArgs)
-	{
-		var myPagingArgs = pagingArgs;
+    public static IQueryable<T> ApplyPaging<T>(this IQueryable<T> query, Paging? pagingArgs)
+    {
+        var args = pagingArgs ?? Paging.Default;
+        return args.UsePaging ? query.Skip(args.SkipAmount).Take(args.PageSize) : query;
+    }
 
-		if (pagingArgs == null)
-		{
-			myPagingArgs = Paging.Default;
-		}
+    public static IQueryable<T> ApplyPaging<T>(this List<T> query, Paging? pagingArgs)
+        => query.AsQueryable().ApplyPaging(pagingArgs);
 
-		return myPagingArgs.UsePaging ? query.Skip(myPagingArgs.SkipAmount).Take(myPagingArgs.PageSize) : query;
-	}
+    public static bool IsObjectNullOrEmpty(object? myObject)
+    {
+        if (myObject is null)
+        {
+            return true;
+        }
 
-	public static IQueryable<T> ApplyPaging<T>(this List<T> query, Paging pagingArgs)
-	{
-		var myPagingArgs = pagingArgs;
-
-		if (pagingArgs == null)
-		{
-			myPagingArgs = Paging.Default;
-		}
-
-		return query.ApplyPaging(myPagingArgs);
-	}
-
-	public static bool IsObjectNullOrEmpty(object myObject)
-	{
-		if (myObject == null)
-		{
-			return true;
-		}
-
-		foreach (var pi in myObject.GetType().GetProperties())
-		{
-			if (pi.PropertyType != typeof(string))
-			{
-				continue;
+        foreach (var property in myObject.GetType().GetProperties())
+        {
+            var value = property.GetValue(myObject);
+            if (value is null)
+            {
+                continue;
             }
 
-            var value = (string)pi.GetValue(myObject);
-			if (value == null || value.AsSpan().Trim().Length == 0)
-			{
-				return true;
-			}
-		}
+            // Check for empty strings
+            if (value is string str && string.IsNullOrWhiteSpace(str))
+            {
+                return true;
+            }
 
-		return false;
-	}
+            // Check for empty collections
+            if (value is IEnumerable enumerable && !enumerable.Cast<object>().Any())
+            {
+                return true;
+            }
+
+            // Check for default value types
+            if (property.PropertyType.IsValueType && value.Equals(Activator.CreateInstance(property.PropertyType)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

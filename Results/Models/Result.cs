@@ -1,136 +1,108 @@
 namespace Results.Models;
 
 using System.Diagnostics.CodeAnalysis;
-using Results.Constants;
+using Results.Enums;
 
 [ExcludeFromCodeCoverage]
 public class Result
 {
-    public bool IsError { get; set; } = false;
-
-    public bool IsValidationError { get; set; } = false;
-
-    public bool IsNotFound { get; set; } = false;
+    public ErrorResults ErrorResult { get; set; } = ErrorResults.None;
 
     public string? Message { get; set; }
 
-    public List<string> Errors { get; set; } = new List<string>();
+    public List<string>? Errors { get; set; } = [];
 
-    public Dictionary<string, List<string>> ValidationErrors { get; set; } = new Dictionary<string, List<string>>();
+    public Dictionary<string, List<string>>? ValidationErrors { get; set; } = [];
 
     public static Result Success() => new()
     {
-        IsError = false,
-        Errors = new List<string>(),
-        ValidationErrors = new Dictionary<string, List<string>>()
+        ErrorResult = ErrorResults.None,
+        Errors = [],
+        ValidationErrors = []
     };
 
-    public static Result Success(string message) => new()
+    public static Result Success(string? message) => new()
     {
-        IsError = false,
+        ErrorResult = ErrorResults.None,
         Message = message,
-        Errors = new List<string>(),
-        ValidationErrors = new Dictionary<string, List<string>>()
+        Errors = [],
+        ValidationErrors = []
     };
 
-    public static Result Failure(List<string> errors) => new()
+    public static Result Failure(List<string>? errors) => new()
     {
-        IsError = true,
-        Errors = errors,
-        ValidationErrors = new Dictionary<string, List<string>>()
+        ErrorResult = ErrorResults.GeneralError,
+        Errors = errors ?? [],
+        ValidationErrors = []
     };
 
-    public static Result Failure(List<string> errors, string message) => new()
+    public static Result Failure(List<string>? errors, string? message) => new()
     {
-        IsError = true,
-        Errors = errors,
+        ErrorResult = ErrorResults.GeneralError,
+        Errors = errors ?? [],
         Message = message,
-        ValidationErrors = new Dictionary<string, List<string>>()
+        ValidationErrors = []
     };
 
-    public static Result Failure(string error) => new()
+    public static Result Failure(string? error) => new()
     {
-        IsError = true,
-        Errors = new List<string>()
-        {
-            error,
-        },
-        ValidationErrors = new Dictionary<string, List<string>>()
+        ErrorResult = ErrorResults.GeneralError,
+        Errors = [error],
+        ValidationErrors = []
     };
 
     public static Result Failure(string error, string message) => new()
     {
-        IsError = true,
+        ErrorResult = ErrorResults.GeneralError,
         Message = message,
-        Errors = new List<string>()
+        Errors = [error],
+        ValidationErrors = []
+    };
+
+    public static Result ValidationFailure(Dictionary<string, List<string>> validationErrors)
+        => new()
         {
-            error,
-        },
-        ValidationErrors = new Dictionary<string, List<string>>()
-    };
+            ErrorResult = ErrorResults.ValidationError,
+            Errors = [],
+            ValidationErrors = validationErrors
+        };
 
-    public static (bool HasError, Result? ErrorResult) HasError(Result result) => result switch
+    public static Result ValidationFailure(Dictionary<string, List<string>>? validationErrors, string? message) => new()
     {
-        null => (true, Failure(ErrorConstants.InternalError)),
-        { IsError: true } => (true, Failure(result.Errors, result.Message)),
-        { IsNotFound: true } => (true, NotFound(result.Message)),
-        { IsValidationError: true } => (true, ValidationFailure(result.ValidationErrors, result.Message)),
-        _ => (false, new())
-    };
-
-    public static Result HandleResult(Result result) => result switch
-    {
-        { IsError: true } => Failure(result.Errors, result.Message),
-        { IsValidationError: true } => ValidationFailure(result.ValidationErrors, result.Message),
-        _ => Success()
-    };
-
-    public static Result ValidationFailure(Dictionary<string, List<string>> validationErrors) => new()
-    {
-        IsValidationError = true,
-        Errors = new List<string>(),
-        ValidationErrors = validationErrors
-    };
-
-    public static Result ValidationFailure(Dictionary<string, List<string>> validationErrors, string message) => new()
-    {
-        IsValidationError = true,
+        ErrorResult = ErrorResults.ValidationError,
         Message = message,
-        Errors = new List<string>(),
-        ValidationErrors = validationErrors
+        Errors = [],
+        ValidationErrors = validationErrors ?? []
     };
 
     public static Result ValidationFailure(string validationError) => new()
     {
-        IsValidationError = true,
+        ErrorResult = ErrorResults.ValidationError,
         Message = validationError
     };
 
     public static Result NotFound() => new()
     {
-        IsError = false,
-        IsValidationError = false,
-        IsNotFound = true,
+        ErrorResult = ErrorResults.NotFound
     };
 
-    public static Result NotFound(string message) => new()
+    public static Result NotFound(string? message) => new()
     {
-        IsError = false,
-        IsValidationError = false,
-        IsNotFound = true,
+        ErrorResult = ErrorResults.NotFound,
         Message = message
     };
 
     public void AddError(string error)
     {
-        this.IsError = true;
+        this.ErrorResult = ErrorResults.GeneralError;
+        this.Errors ??= [];
         this.Errors.Add(error);
     }
 
     public void AddValidationError(string name, List<string> errors)
     {
-        this.IsValidationError = true;
-
+        this.ErrorResult = ErrorResults.ValidationError;
+        this.ValidationErrors ??= [];
         if (!this.ValidationErrors.TryGetValue(name, out var value))
         {
             this.ValidationErrors.Add(name, errors);
@@ -142,87 +114,133 @@ public class Result
     }
 
     public bool HasError()
-        => this.IsError || this.IsValidationError || this.IsNotFound;
+        => this.ErrorResult != ErrorResults.None;
 }
 
-[ExcludeFromCodeCoverage]
-public class Result<T> : Result
+public class Result<T>
 {
+    public ErrorResults ErrorResult { get; set; } = ErrorResults.None;
+
+    public string? Message { get; set; }
+
     public T? Data { get; set; }
 
-    public static Result<T> Success(T data, string? message = null) => new()
+    public int Count { get; set; }
+
+    public List<string>? Errors { get; set; } = [];
+
+    public Dictionary<string, List<string>>? ValidationErrors { get; set; } = [];
+
+    public static Result<T> Success() => new()
+    {
+        ErrorResult = ErrorResults.None,
+        Errors = [],
+        ValidationErrors = []
+    };
+
+    public static Result<T> Success(T data) => new()
     {
         Data = data,
-        IsError = false,
-        Message = message
+        Count = 0,
+        ErrorResult = ErrorResults.None,
+        Errors = [],
+        ValidationErrors = []
     };
 
-    public static new Result<T> Failure(string error, string? message = null) => new()
+    public static Result<T> Success(T data, int count, string? message = "") => new()
     {
-        IsError = true,
-        Errors = new List<string> { error },
-        Message = message
+        Data = data,
+        Count = count,
+        ErrorResult = ErrorResults.None,
+        Message = message,
+        Errors = [],
+        ValidationErrors = []
     };
 
-    public static new Result<T> Failure(List<string> errors, string? message = null) => new()
+    public static Result<T> Failure(List<string>? errors) => new()
     {
-        IsError = true,
-        Errors = errors,
-        Message = message
+        ErrorResult = ErrorResults.GeneralError,
+        Errors = errors ?? [],
+        ValidationErrors = []
     };
 
-    public new Result<T> AddError(string error)
+    public static Result<T> Failure(List<string>? errors, string? message) => new()
     {
-        this.IsError = true;
-        this.Errors ??= new List<string>();
-        this.Errors.Add(error);
-        return this;
-    }
+        ErrorResult = ErrorResults.GeneralError,
+        Errors = errors ?? [],
+        Message = message,
+        ValidationErrors = []
+    };
 
-    public static new Result<T> ValidationFailure(string validationError) => new()
+    public static Result<T> Failure(string? error) => new()
     {
-        IsValidationError = true,
+        ErrorResult = ErrorResults.GeneralError,
+        Errors = [error],
+        ValidationErrors = []
+    };
+
+    public static Result<T> Failure(string error, string message) => new()
+    {
+        ErrorResult = ErrorResults.GeneralError,
+        Message = message,
+        Errors = [error],
+        ValidationErrors = []
+    };
+
+    public static Result<T> ValidationFailure(Dictionary<string, List<string>> validationErrors)
+        => new()
+        {
+            ErrorResult = ErrorResults.ValidationError,
+            Errors = [],
+            ValidationErrors = validationErrors
+        };
+
+    public static Result<T> ValidationFailure(Dictionary<string, List<string>>? validationErrors, string? message) => new()
+    {
+        ErrorResult = ErrorResults.ValidationError,
+        Message = message,
+        Errors = [],
+        ValidationErrors = validationErrors ?? []
+    };
+
+    public static Result<T> ValidationFailure(string validationError) => new()
+    {
+        ErrorResult = ErrorResults.ValidationError,
         Message = validationError
     };
 
-    public static new Result<T> ValidationFailure(Dictionary<string, List<string>> validationErrors) => new()
+    public static Result<T> NotFound() => new()
     {
-        IsValidationError = true,
-        ValidationErrors = validationErrors
+        ErrorResult = ErrorResults.NotFound
     };
 
-    public static Result<T> ValidationFailure(Dictionary<string, List<string>> validationErrors, T data = default) => new()
+    public static Result<T> NotFound(string? message) => new()
     {
-        Data = data,
-        IsValidationError = true,
-        ValidationErrors = validationErrors
-    };
-
-    public static Result<T> ValidationFailure(Dictionary<string, List<string>> validationErrors, string message, T data = default) => new()
-    {
-        Data = data,
-        Message = message,
-        IsValidationError = true,
-        ValidationErrors = validationErrors
-    };
-
-    public static new Result<T> NotFound(string? message = null) => new()
-    {
-        IsError = false,
-        IsValidationError = false,
-        IsNotFound = true,
+        ErrorResult = ErrorResults.NotFound,
         Message = message
     };
 
-    public void AddData(T data)
-        => this.Data = data;
+    public void AddError(string error)
+    {
+        this.ErrorResult = ErrorResults.GeneralError;
+        this.Errors ??= [];
+        this.Errors.Add(error);
+    }
 
-    public static (bool HasError, Result<T2> ErrorResult) HasError<T1, T2>(Result<T1> result) where T2 : class =>
-    result == null || result.IsError || result.Data == null
-        ? (true, Result<T2>.Failure(result?.Errors, result?.Message ?? ErrorConstants.InternalError))
-        : result.IsNotFound
-            ? (true, Result<T2>.NotFound(result.Message))
-            : result.IsValidationError
-                ? (true, Result<T2>.ValidationFailure(result.ValidationErrors, result.Message))
-                : (false, new Result<T2>());
+    public void AddValidationError(string name, List<string> errors)
+    {
+        this.ErrorResult = ErrorResults.ValidationError;
+        this.ValidationErrors ??= [];
+        if (!this.ValidationErrors.TryGetValue(name, out var value))
+        {
+            this.ValidationErrors.Add(name, errors);
+        }
+        else
+        {
+            value.AddRange(errors);
+        }
+    }
+
+    public bool HasError()
+        => this.ErrorResult != ErrorResults.None;
 }
