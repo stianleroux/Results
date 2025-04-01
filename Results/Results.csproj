@@ -14,7 +14,7 @@
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/stianleroux/Results</RepositoryUrl>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <Version>1.4.0</Version>
+        <Version>1.4.1</Version>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Authors>Stian Le Roux</Authors>
         <NoWarn>7035</NoWarn>
@@ -22,7 +22,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.31" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
     <ItemGroup>
