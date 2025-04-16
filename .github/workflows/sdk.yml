@@ -87,6 +87,12 @@ jobs:
 
       - name: Push NuGet Package
         run: dotnet nuget push nuget-packages/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+        
+      - name: Upload NuGet Package as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-artifact
+          path: ./nuget-packages/
 
   release:
     needs: publish
@@ -110,14 +116,16 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-artifact
-          path: ./bin/Release/
+          path: ./downloaded-nuget-packages/
           
       - name: Generate release notes
         id: notes
         uses: release-drafter/release-drafter@v5
         with:
           config-name: release-drafter.yml
-
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
       # Create GitHub Release
       - name: Create GitHub Release
         id: create_release
@@ -135,14 +143,14 @@ jobs:
           prerelease: false
       
       - name: List files in nuget-packages
-        run: ls -al ./nuget-packages/
+        run: ls -al ./downloaded-nuget-packages/
         
       # Upload the NuGet Package as an asset in the release
       - name: Upload NuGet Package to Release
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./nuget-packages/results-${{ env.VERSION }}.nupkg 
+          asset_path: ./downloaded-nuget-packages/results-${{ env.VERSION }}.nupkg 
           asset_name: results-${{ env.VERSION }}.nupkg
           asset_content_type: application/octet-stream
           
