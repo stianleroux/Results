@@ -93,7 +93,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       # Install xmllint tool (libxml2-utils)
       - name: Install xmllint
@@ -107,7 +107,7 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           
       - name: Download artifact
-        uses: actions/download-artifact@v3.0.2
+        uses: actions/upload-artifact@v4
         with:
           name: release-artifact
           path: ./nuget-packages
