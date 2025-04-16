@@ -73,27 +73,17 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --configuration Release --output ./build-output
+        run: dotnet build --configuration Release 
 
       - name: Get Version from Git Tags
         id: get_version
-        run: |
-          VERSION_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.1.0")
-          TIMESTAMP=$(date +'%Y%m%d.%H%M%S')
-          PACKAGE_VERSION="${VERSION_TAG}-${TIMESTAMP}"
-          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+        run: echo "VERSION=$(git describe --tags --always --dirty)" >> $GITHUB_ENV
 
       - name: Pack NuGet Package
-        run: |
-          dotnet pack Results/Results.csproj \
-            --no-build \
-            --output build-output/nuget-packages \
-            --configuration Release \
-            /p:PackageVersion=${{ env.PACKAGE_VERSION }}
+        run: dotnet pack Results/Results.csproj --output nuget-packages --configuration Release /p:Version=1.$(date +'%Y%m%d.%H%M%S')
 
       - name: Push NuGet Package
-        run: |
-          dotnet nuget push build-output/nuget-packages/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push nuget-packages/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
 
   release:
     needs: publish
@@ -117,7 +107,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: release-artifact
-          path: ./build-output
           
       - name: Generate release notes
         id: notes
