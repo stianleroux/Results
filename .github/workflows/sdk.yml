@@ -150,7 +150,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./downloaded-nuget-packages/results-${{ env.VERSION }}.nupkg 
+          asset_path: ./downloaded-nuget-packages/SLR.Results-*.nupkg 
           asset_name: results-${{ env.VERSION }}.nupkg
           asset_content_type: application/octet-stream
           
