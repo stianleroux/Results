@@ -78,23 +78,15 @@ jobs:
       - name: Get Version from Git Tags
         id: get_version
         run: |
-          VERSION_TAG=$(git describe --tags --abbrev=0 || echo "0.1.0")
-          echo "PACKAGE_VERSION=${VERSION_TAG}" >> $GITHUB_ENV
+          VERSION_TAG=$(git describe --tags --abbrev=0 || echo "0.1.0") echo "PACKAGE_VERSION=${VERSION_TAG}" >> $GITHUB_ENV
 
       - name: Pack NuGet Package
         run: |
-          dotnet pack Results/Results.csproj \
-            --no-build \
-            --output build-output/nuget-packages \
-            --configuration Release \
-            /p:Version=${{ env.PACKAGE_VERSION }}
+          dotnet pack Results/Results.csproj --no-build --output build-output/nuget-packages --configuration Release /p:Version=${{ env.PACKAGE_VERSION }}
 
-       - name: Push NuGet Package
+      - name: Push NuGet Package
         run: |
-          dotnet nuget push build-output/nuget-packages/*.nupkg \
-            --skip-duplicate \
-            --source https://api.nuget.org/v3/index.json \
-            --api-key ${{ secrets.NUGET_API_KEY }}
+          dotnet nuget push build-output/nuget-packages/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
 
   release:
     needs: publish
