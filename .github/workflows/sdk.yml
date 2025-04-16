@@ -45,6 +45,9 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
+      outputs:
+      version: ${{ steps.set_version.outputs.version }}
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -73,6 +76,7 @@ jobs:
         run: dotnet restore
         
       - name: Set Version
+        id: set_version
         run: echo "PACKAGE_VERSION=1.$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
 
       - name: Build
@@ -101,6 +105,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Echo version from publish
+        run: echo "VERSION from publish job: ${{ needs.publish.outputs.version }}"
+        
       # Install xmllint tool (libxml2-utils)
       - name: Install xmllint
         run: sudo apt-get install -y libxml2-utils
@@ -133,12 +140,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
-          tag_name: ${{ env.VERSION }}
-          release_name: Release ${{ env.VERSION }}
+          tag_name: ${{ VERSION }}
+          release_name: Release ${{ VERSION }}
           body: |
             ## Changes in this release:
             - Auto-generated release based on latest commit
-            - Version: ${{ env.VERSION }}
+            - Version: ${{ VERSION }}
           draft: false
           prerelease: false
       
@@ -150,8 +157,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./downloaded-nuget-packages/results-${{ env.PACKAGE_VERSION }}.nupkg 
-          asset_name: results-${{ env.PACKAGE_VERSION }}.nupkg
+          asset_path: ./downloaded-nuget-packages/SLR.Results.${{ VERSION }}.nupkg 
+          asset_name: SLR.Results.${{ VERSION }}.nupkg
           asset_content_type: application/octet-stream
           
         env:
