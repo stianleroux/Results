@@ -141,12 +141,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
-          tag_name: ${{ VERSION }}
-          release_name: Release ${{ VERSION }}
+          tag_name: $VERSION
+          release_name: Release $VERSION
           body: |
             ## Changes in this release:
             - Auto-generated release based on latest commit
-            - Version: ${{ VERSION }}
+            - Version: $VERSION
           draft: false
           prerelease: false
       
@@ -158,8 +158,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./downloaded-nuget-packages/SLR.Results.${{ VERSION }}.nupkg 
-          asset_name: SLR.Results.${{ VERSION }}.nupkg
+          asset_path: ./downloaded-nuget-packages/SLR.Results.$VERSION.nupkg 
+          asset_name: SLR.Results.$VERSION.nupkg
           asset_content_type: application/octet-stream
           
         env:
