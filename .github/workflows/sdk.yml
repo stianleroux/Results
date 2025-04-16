@@ -106,7 +106,8 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Echo version from publish
-        run: echo "VERSION from publish job: ${{ needs.publish.outputs.version }}"
+        run: |
+          echo "VERSION from publish job: ${{ needs.publish.outputs.version }}"
         
       # Install xmllint tool (libxml2-utils)
       - name: Install xmllint
