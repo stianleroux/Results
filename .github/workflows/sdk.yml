@@ -83,7 +83,7 @@ jobs:
         run: echo "VERSION=$(git describe --tags --always --dirty)" >> $GITHUB_ENV
 
       - name: Pack NuGet Package
-        run: dotnet pack Results/Results.csproj --no-build --output ./nuget-packages --configuration Release /p:PackageVersion=${{ env.VERSION }}
+        run: dotnet pack Results/Results.csproj --no-build --output ./nuget-packages --configuration Release /p:PackageVersion=${{ env.PACKAGE_VERSION }}
 
       - name: Push NuGet Package
         run: dotnet nuget push nuget-packages/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
@@ -150,8 +150,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./downloaded-nuget-packages/results-${{ env.VERSION }}.nupkg 
-          asset_name: results-${{ env.VERSION }}.nupkg
+          asset_path: ./downloaded-nuget-packages/results-${{ env.PACKAGE_VERSION }}.nupkg 
+          asset_name: results-${{ env.PACKAGE_VERSION }}.nupkg
           asset_content_type: application/octet-stream
           
         env:
