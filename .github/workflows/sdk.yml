@@ -45,8 +45,8 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
-      outputs:
-      version: ${{ steps.set_version.outputs.version }}
+        outputs:
+        version: ${{ steps.set_version.outputs.version }}
       
     steps:
       - name: Checkout code
