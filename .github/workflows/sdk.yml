@@ -76,14 +76,14 @@ jobs:
         run: echo "PACKAGE_VERSION=1.$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
 
       - name: Build
-        run: dotnet build --configuration Release --output ./build-output
+        run: dotnet build --configuration Release
 
       - name: Get Version from Git Tags
         id: get_version
         run: echo "VERSION=$(git describe --tags --always --dirty)" >> $GITHUB_ENV
 
       - name: Pack NuGet Package
-        run: dotnet pack Results/Results.csproj --no-build --output ./build-output/nuget-packages --configuration Release /p:PackageVersion=${{ env.PACKAGE_VERSION }}
+        run: dotnet pack Results/Results.csproj --no-build --output ./nuget-packages --configuration Release /p:PackageVersion=${{ env.PACKAGE_VERSION }}
 
       - name: Push NuGet Package
         run: dotnet nuget push nuget-packages/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
@@ -110,7 +110,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: release-artifact
-          path: ./release
+          path: ./bin/Release/net*/
           
       - name: Generate release notes
         id: notes
