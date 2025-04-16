@@ -107,10 +107,10 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v3.0.2
         with:
           name: release-artifact
-          path: ./bin/Release/net8.0/
+          path: ./nuget-packages
           
       - name: Generate release notes
         id: notes
