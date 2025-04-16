@@ -110,11 +110,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-artifact
-          path: ./nuget-packages
+          path: ./bin/Release/
           
       - name: Generate release notes
         id: notes
         uses: release-drafter/release-drafter@v5
+        with:
+          config-name: release-drafter.yml
 
       # Create GitHub Release
       - name: Create GitHub Release
@@ -143,3 +145,6 @@ jobs:
           asset_path: ./nuget-packages/results-${{ env.VERSION }}.nupkg 
           asset_name: results-${{ env.VERSION }}.nupkg
           asset_content_type: application/octet-stream
+          
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
