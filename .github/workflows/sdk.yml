@@ -166,8 +166,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.get_filename.outputs.nupkg_path }}
-          asset_name: ${{ steps.get_filename.outputs.nupkg_name }}
+          asset_path: $FILE_NAME
+          asset_name: $GITHUB_OUTPUT
           asset_content_type: application/octet-stream
           
         env:
