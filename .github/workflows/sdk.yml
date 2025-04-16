@@ -110,7 +110,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: release-artifact
-          path: ./bin/Release/net*/
+          path: ./bin/Release/net8.0/
           
       - name: Generate release notes
         id: notes
