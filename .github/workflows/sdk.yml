@@ -144,15 +144,14 @@ jobs:
       
       - name: Find NuGet package
         id: find_package
-        run: echo "PACKAGE_PATH=$(find ./downloaded-nuget-packages -name 'SLR.Results-*.nupkg' | head -n 1)" >> $GITHUB_ENV
-
+        run: echo "path=$(find ./downloaded-nuget-packages -name 'SLR.Results-*.nupkg' | head -n 1)" >> $GITHUB_OUTPUT
         
       # Upload the NuGet Package as an asset in the release
       - name: Upload NuGet Package to Release
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.PACKAGE_PATH }}
+          asset_path: ${{ steps.find_package.outputs.path }}
           asset_name: results-${{ env.VERSION }}.nupkg
           asset_content_type: application/octet-stream
         env:
