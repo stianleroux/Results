@@ -87,9 +87,17 @@ public static class FunctionalResult
     }
 
     /// <summary>
+    /// Maps the error list if the result is a failure.
+    /// </summary>
+    public static Result<T> MapError<T>(this Result<T> result, Func<List<string>, List<string>> map) =>
+        result.HasError
+            ? Result<T>.Failure(map(result.Errors))
+            : Result<T>.Success(result.Data);
+
+    /// <summary>
     /// Asynchronously maps the error list if the result is a failure.
     /// </summary>
-    public static async Task<Result<T>> MapErrorAsync<T>(this Task<Result<T>> resultTask, Func<List<string>, string> map)
+    public static async Task<Result<T>> MapErrorAsync<T>(this Task<Result<T>> resultTask, Func<List<string>, List<string>> map)
     {
         var result = await resultTask;
         return result.MapError(map);
@@ -117,4 +125,20 @@ public static class FunctionalResult
             ? await onFailure(result.Errors)
             : await onSuccess(result.Data);
     }
+
+    /// <summary>
+    /// Executes logic based on success or failure for non-generic <see cref="Result"/>.
+    /// </summary>
+    /// <typeparam name="TResult">The return type of the handlers.</typeparam>
+    /// <param name="result">The result to match.</param>
+    /// <param name="onSuccess">Handler if the result has no error.</param>
+    /// <param name="onFailure">Handler if the result has errors.</param>
+    /// <returns>The output from the appropriate handler.</returns>
+    public static TResult Match<TResult>(
+        this Result result,
+        Func<string, TResult> onSuccess,
+        Func<List<string>, TResult> onFailure) =>
+        result.HasError
+            ? onFailure(result.Errors ?? [])
+            : onSuccess(result.Message);
 }

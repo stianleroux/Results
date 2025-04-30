@@ -25,13 +25,14 @@ public static class ApiResponseHelper
     /// </list>
     /// </returns>
     public static ActionResult<Result<T>> ResponseOutcome<T>(Result<T> result, ControllerBase controller)
-        => result switch
-        {
-            { ErrorResult: ErrorResults.GeneralError } => controller.StatusCode(500, result),
-            { ErrorResult: ErrorResults.ValidationError } => controller.BadRequest(result),
-            { ErrorResult: ErrorResults.NotFound } => controller.NotFound(result),
-            _ => controller.Ok(result)
-        };
+        => result.Match<T, ActionResult<Result<T>>>(
+            onSuccess: _ => controller.Ok(result),
+            onFailure: _ => result.ErrorResult switch
+            {
+                ErrorResults.ValidationError => controller.BadRequest(result),
+                ErrorResults.NotFound => controller.NotFound(result),
+                _ => controller.StatusCode(500, result)
+            });
 
     /// <summary>
     /// Maps a non-generic <see cref="Result"/> to an appropriate <see cref="ActionResult"/> based on the error result.
@@ -48,11 +49,12 @@ public static class ApiResponseHelper
     /// </list>
     /// </returns>
     public static ActionResult<Result> ResponseOutcome(Result result, ControllerBase controller)
-        => result switch
-        {
-            { ErrorResult: ErrorResults.GeneralError } => controller.StatusCode(500, result),
-            { ErrorResult: ErrorResults.ValidationError } => controller.BadRequest(result),
-            { ErrorResult: ErrorResults.NotFound } => controller.NotFound(result),
-            _ => controller.Ok(result)
-        };
+        => result.Match<ActionResult<Result>>(
+            onSuccess: _ => controller.Ok(result),
+            onFailure: _ => result.ErrorResult switch
+            {
+                ErrorResults.ValidationError => controller.BadRequest(result),
+                ErrorResults.NotFound => controller.NotFound(result),
+                _ => controller.StatusCode(500, result)
+            });
 }

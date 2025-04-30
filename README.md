@@ -19,6 +19,9 @@ Install-Package SLR.Results
 -   Allows uniformity in your code or anyone that needs to consume it
 -   ApiResponseHelper to have uniform API Responses in Controllers
 -   Result<List<T>> has built-in capability for paging using PagingExtensions
+-   Monadic composition (Bind): Chain result-producing operations.
+-   Mapping (Map, MapError): Transform values or errors.
+-   Pattern matching (Match): Handle success/failure paths cleanly.
 
 ## Return a Result
 
@@ -49,6 +52,20 @@ This will handle 400, 404, 500 and 200
 
 ```csharp
   return ApiResponseHelper.ResponseOutcome(await this.Mediator.Send(new ExampleQuery(), cancellationToken), this)
+```
+
+## Monadic composition Helper Function
+
+FunctionalResult class (like Map, Bind, MapError, and Match) are a great addition and fit perfectly with the Result<T> pattern you're already using.
+
+```cs
+Result<UserDto> result = GetUser(userId)
+    .Bind(user => GetUser(user.Id))
+    .Map(user => new UserDto(user.Name))
+    .Match(
+        onSuccess: dto => Ok(dto),
+        onFailure: err => BadRequest(err)
+    )
 ```
 
 ## .NET Targeting
