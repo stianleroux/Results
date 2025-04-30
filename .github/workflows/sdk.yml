@@ -112,8 +112,10 @@ jobs:
           echo "VERSION from publish job: ${{ needs.publish.outputs.version }}"
         
       # Install xmllint tool (libxml2-utils)
-      - name: Install xmllint
-        run: sudo apt install libxml2-utils
+      - name: Update apt and install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils
       
       # Get the version from the .csproj file
       - name: Get version from .csproj
