@@ -113,7 +113,7 @@ jobs:
         
       # Install xmllint tool (libxml2-utils)
       - name: Install xmllint
-        run: sudo apt-get install -y libxml2-utils
+        run: sudo apt install libxml2-utils
       
       # Get the version from the .csproj file
       - name: Get version from .csproj
