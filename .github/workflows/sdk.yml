@@ -121,18 +121,16 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libxml2-utils
-      
-      - name: Install xmllint
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libxml2-utils
 
       # Get the version from the .csproj file
-      - name: Get version from .csproj
-        id: get_version
+      - name: Get base version from .csproj
+        id: get_base_version
         run: |
-          VERSION=$(xmllint --xpath "string(//Project/PropertyGroup/Version)" Results/Results.csproj)
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          BASE_VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" Results/Results.csproj)
+          TIMESTAMP=$(date +'%Y%m%d.%H%M%S')
+          FULL_VERSION="${BASE_VERSION}-${TIMESTAMP}"
+          echo "PACKAGE_VERSION=$FULL_VERSION" >> $GITHUB_ENV
+          echo "version=$FULL_VERSION" >> $GITHUB_OUTPUT
           
       - name: Download artifact
         uses: actions/download-artifact@v4
