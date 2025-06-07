@@ -75,8 +75,12 @@ jobs:
         id: get_base_version
         run: |
           BASE_VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" Results/Results.csproj)
-          SUFFIX="ci$(date +%H%M%S)"  # e.g. ci072512
-          FULL_VERSION="${BASE_VERSION}-${SUFFIX}"
+          if echo "$BASE_VERSION" | grep -qi "beta"; then
+            SUFFIX="ci$(date +%H%M%S)"  # e.g. ci072512
+            FULL_VERSION="${BASE_VERSION}-${SUFFIX}"
+          else
+            FULL_VERSION="$BASE_VERSION"
+          fi
           echo "PACKAGE_VERSION=$FULL_VERSION" >> $GITHUB_ENV
           echo "version=$FULL_VERSION" >> $GITHUB_OUTPUT
 
@@ -142,7 +146,7 @@ jobs:
             - Auto-generated release based on latest commit
             - Version: ${{ needs.publish.outputs.version }}
           draft: false
-          prerelease: false
+          prerelease: ${{ startsWith(needs.publish.outputs.version, '1.') || contains(needs.publish.outputs.version, '-ci') }}
 
       - name: Get NuGet file path
         id: get_filename
