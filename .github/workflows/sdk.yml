@@ -21,13 +21,11 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-
 
-      # Set up .NET 8
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
 
-      # Set up .NET 9
       - name: Setup .NET 9
         uses: actions/setup-dotnet@v3
         with:
@@ -47,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get_base_version.outputs.version }}
-      
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -60,13 +58,11 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-
 
-      # Set up .NET 8
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
 
-      # Set up .NET 9
       - name: Setup .NET 9
         uses: actions/setup-dotnet@v3
         with:
@@ -87,16 +83,12 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release
 
-      - name: Get Version from Git Tags
-        id: get_version
-        run: echo "VERSION=$(git describe --tags --always --dirty)" >> $GITHUB_ENV
-
       - name: Pack NuGet Package
         run: dotnet pack Results/Results.csproj --no-build --output ./nuget-packages --configuration Release /p:PackageVersion=${{ env.PACKAGE_VERSION }}
 
       - name: Push NuGet Package
         run: dotnet nuget push nuget-packages/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
-        
+
       - name: Upload NuGet Package as Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -105,39 +97,30 @@ jobs:
 
   release:
     needs: publish
-    runs-on: ubuntu-latest    
+    runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Echo version from publish
-        run: |
-          echo "VERSION from publish job: ${{ needs.publish.outputs.version }}"
-        
-      # Install xmllint tool (libxml2-utils)
+
+      - name: Print version env var
+        run: echo "PACKAGE_VERSION=$PACKAGE_VERSION"
+        env:
+          PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
+
       - name: Update apt and install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libxml2-utils
 
-      # Get the version from the .csproj file
-      - name: Get short version from .csproj
-        id: get_base_version
-        run: |
-          BASE_VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" Results/Results.csproj)
-          SUFFIX="ci$(date +%H%M%S)"  # e.g. ci072512
-          FULL_VERSION="${BASE_VERSION}-${SUFFIX}"
-          echo "PACKAGE_VERSION=$FULL_VERSION" >> $GITHUB_ENV
-          echo "version=$FULL_VERSION" >> $GITHUB_OUTPUT
-          
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: release-artifact
           path: ./downloaded-nuget-packages/
-          
+
       - name: Generate release notes
         id: notes
         uses: release-drafter/release-drafter@v5
@@ -145,8 +128,7 @@ jobs:
           config-name: release-drafter.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-      # Create GitHub Release
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -161,22 +143,22 @@ jobs:
             - Version: ${{ needs.publish.outputs.version }}
           draft: false
           prerelease: false
-      
+
       - name: Get NuGet file path
         id: get_filename
         run: |
-            echo "📦 Listing files:"
-            ls -al ./downloaded-nuget-packages/
+          echo "📦 Listing files:"
+          ls -al ./downloaded-nuget-packages/
 
-            FILE_NAME=$(find ./downloaded-nuget-packages -name "*.nupkg" | head -n 1)
+          FILE_NAME=$(find ./downloaded-nuget-packages -name "*.nupkg" | head -n 1)
 
-            if [ -z "$FILE_NAME" ]; then
-              echo "❌ No .nupkg found"
-              exit 1
-            fi
+          if [ -z "$FILE_NAME" ]; then
+            echo "❌ No .nupkg found"
+            exit 1
+          fi
 
-            echo "nupkg_path=$FILE_NAME" >> $GITHUB_OUTPUT
-            echo "nupkg_name=$(basename $FILE_NAME)" >> $GITHUB_OUTPUT
+          echo "nupkg_path=$FILE_NAME" >> $GITHUB_OUTPUT
+          echo "nupkg_name=$(basename $FILE_NAME)" >> $GITHUB_OUTPUT
 
       - name: Upload NuGet Package to Release
         uses: actions/upload-release-asset@v1
