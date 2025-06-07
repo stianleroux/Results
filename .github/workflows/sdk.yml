@@ -78,7 +78,7 @@ jobs:
       - name: Get base version from .csproj
         id: get_base_version
         run: |
-          BASE_VERSION=$(xmllint --xpath "string(//Project/PropertyGroup/Version)" Results/Results.csproj)
+          BASE_VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" Results/Results.csproj)
           TIMESTAMP=$(date +'%Y%m%d.%H%M%S')
           FULL_VERSION="${BASE_VERSION}-${TIMESTAMP}"
           echo "PACKAGE_VERSION=$FULL_VERSION" >> $GITHUB_ENV
