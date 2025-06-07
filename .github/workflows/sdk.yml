@@ -46,7 +46,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.set_version.outputs.version }}
+      version: ${{ steps.get_base_version.outputs.version }}
       
     steps:
       - name: Checkout code
@@ -74,10 +74,15 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore
-        
-      - name: Set Version
-        id: set_version
-        run: echo "PACKAGE_VERSION=1.$(date +'%Y%m%d.%H%M%S')" >> $GITHUB_ENV
+
+      - name: Get base version from .csproj
+        id: get_base_version
+        run: |
+          BASE_VERSION=$(xmllint --xpath "string(//Project/PropertyGroup/Version)" Results/Results.csproj)
+          TIMESTAMP=$(date +'%Y%m%d.%H%M%S')
+          FULL_VERSION="${BASE_VERSION}-${TIMESTAMP}"
+          echo "PACKAGE_VERSION=$FULL_VERSION" >> $GITHUB_ENV
+          echo "version=$FULL_VERSION" >> $GITHUB_OUTPUT
 
       - name: Build
         run: dotnet build --configuration Release

@@ -14,7 +14,7 @@ public static class DbResultProcessor<T>
 }
 
 [ExcludeFromCodeCoverage]
-public static class EFResultProcessor
+public static class DbResultProcessor
 {
     public static Result Outcome(int dbRowsAffected, string? errorMessage = null)
         => dbRowsAffected > 0
