@@ -153,12 +153,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
-          tag_name: ${{ env.VERSION }}
-          release_name: Release ${{ env.VERSION }}
+          tag_name: ${{ needs.publish.outputs.version }}
+          release_name: Release ${{ needs.publish.outputs.version }}
           body: |
             ## Changes in this release:
             - Auto-generated release based on latest commit
-            - Version: $VERSION
+            - Version: ${{ needs.publish.outputs.version }}
           draft: false
           prerelease: false
       
