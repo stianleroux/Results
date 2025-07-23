@@ -39,7 +39,7 @@ jobs:
         run: dotnet clean
 
       - name: Restore dependencies
-        run: dotnet restore --framework ${{ matrix.framework }}
+        run: dotnet restore --framework ${{ matrix.framework }} /p:RestoreLockedMode=false
 
       - name: Build
         run: dotnet build --no-restore --framework ${{ matrix.framework }}
