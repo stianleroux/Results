@@ -8,8 +8,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         dotnet: ['7.0.x', '8.0.x', '9.0.x', '10.0.100-preview.6.25358.103']
+        framework:
+          - net7.0
+          - net8.0
+          - net9.0
+          - net10.0
+        include:
+          - dotnet: '7.0.x'
+            framework: net7.0
+          - dotnet: '8.0.x'
+            framework: net8.0
+          - dotnet: '9.0.x'
+            framework: net9.0
+          - dotnet: '10.0.100-preview.6.25358.103'
+            framework: net10.0
     steps:
       - uses: actions/checkout@v4
 
@@ -24,10 +39,10 @@ jobs:
         run: dotnet clean
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore --framework ${{ matrix.framework }}
 
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet build --no-restore --framework ${{ matrix.framework }}
 
       - name: Test
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test --no-build --verbosity normal --framework ${{ matrix.framework }}
