@@ -12,6 +12,9 @@ public class Result : ResultBase
     public static Result Failure(List<string>? errors = null, string? message = null)
         => new() { ErrorResult = ErrorResults.GeneralError, Errors = errors ?? [], Message = message };
 
+    public static Result Failure(Exception exception)
+        => Failure(exception?.Message, exception?.InnerException?.Message);
+
     public static Result Failure(string error, string? message = null)
         => Failure([error], message);
 
