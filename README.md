@@ -10,6 +10,89 @@ You can install [SLR.Results with NuGet](https://www.nuget.org/packages/SLR.Resu
 Install-Package SLR.Results
 ```
 
+## GitHub Copilot Instructions
+
+To help GitHub Copilot better understand and use the SLR.Results package in your C# projects, add these instructions to your `.github/copilot-instructions.md` file:
+
+```markdown
+# SLR.Results Usage Instructions
+
+When working with methods that can fail or return errors, use the SLR.Results pattern:
+
+## Return Types
+- Use `Result` for operations without a return value
+- Use `Result<T>` for operations that return a single value
+- Use `Result<List<T>>` for operations that return collections with paging support
+
+## Success Cases
+```csharp
+return Result.Success();
+return Result<User>.Success(user);
+return Result<List<User>>.Success(users, totalCount);
+```
+
+## Failure Cases
+```csharp
+return Result.Failure("Error message");
+return Result<User>.Failure("User not found");
+return Result<User>.NotFound("User not found");
+return Result<User>.ValidationError("Invalid email format");
+```
+
+## Functional Composition
+Chain operations using Bind, Map, and Match:
+```csharp
+return GetUser(userId)
+    .Bind(user => UpdateUser(user))
+    .Map(user => new UserDto(user))
+    .Match(
+        onSuccess: dto => Ok(dto),
+        onFailure: err => BadRequest(err)
+    );
+```
+
+## API Controllers
+Use ApiResponseHelper for consistent API responses:
+```csharp
+return ApiResponseHelper.ResponseOutcome(
+    await Mediator.Send(new GetUserQuery(id), cancellationToken), 
+    this
+);
+```
+
+Always prefer Result pattern over throwing exceptions for business logic errors.
+```
+
+### Cursor AI Instructions
+
+For Cursor AI users, add these instructions to your `.cursorrules` file in the project root:
+
+```
+# SLR.Results Package Usage
+
+When writing C# code that handles operations that can fail:
+
+- Use Result for void operations: Result.Success() or Result.Failure("error")
+- Use Result<T> for single value returns: Result<User>.Success(user) or Result<User>.Failure("error")
+- Use Result<List<T>> for collections with paging: Result<List<User>>.Success(users, totalCount)
+
+Error handling methods:
+- .Failure("message") - general errors
+- .NotFound("message") - not found errors (404)
+- .ValidationError("message") - validation errors (400)
+
+Functional composition:
+- .Bind() - chain Result-producing operations
+- .Map() - transform success values
+- .MapError() - transform error values
+- .Match() - pattern match on success/failure
+
+In API Controllers, use:
+ApiResponseHelper.ResponseOutcome(result, this)
+
+Never throw exceptions for expected business logic errors. Always return Result types.
+```
+
 ## Key Features
 
 -   Works in most .NET Projects
@@ -67,6 +150,86 @@ Result<UserDto> result = GetUser(userId)
         onFailure: err => BadRequest(err)
     )
 ```
+
+## Security Best Practices
+
+When using SLR.Results in production applications:
+
+### Sensitive Data in Error Messages
+- **Never include sensitive information** (passwords, tokens, PII, connection strings) in error messages
+- Use generic error messages for external consumers
+- Log detailed error information server-side only
+
+```csharp
+// ❌ BAD - Exposes sensitive data
+return Result.Failure($"Database connection failed: {connectionString}");
+
+// ✅ GOOD - Generic message for client, detailed logging server-side
+_logger.LogError("Database connection failed: {ConnectionString}", connectionString);
+return Result.Failure("Database connection error. Please contact support.");
+```
+
+### Important Note on Error Sanitization
+**There is no built-in mechanism to automatically sanitize errors from Result objects.** Once error messages are added to a Result, they will be serialized and sent to clients via ApiResponseHelper. Therefore:
+
+- **Be careful when creating Result objects** - avoid including sensitive data in error messages
+- **Review exception messages** - exceptions may contain sensitive information like file paths or configuration details
+- **Consider a middleware approach** - for additional safety, implement middleware to sanitize Result objects before they reach the client:
+
+```csharp
+// Example: Sanitizing middleware or filter
+public class SanitizeResultFilter : IActionFilter
+{
+    public void OnActionExecuted(ActionExecutedContext context)
+    {
+        if (context.Result is ObjectResult objectResult && 
+            objectResult.Value is Result result && 
+            !result.IsSuccess)
+        {
+            // In production, replace detailed errors with generic messages
+            if (_environment.IsProduction() && result.ErrorResult == ErrorResults.GeneralError)
+            {
+                result.Errors = ["An error occurred. Please contact support."];
+                result.Message = "Error reference: " + Guid.NewGuid();
+            }
+        }
+    }
+}
+```
+
+### PII Redaction
+The GitHub repository [stianleroux/Results](https://github.com/stianleroux/Results) does not have built-in functionality for PII redaction. To implement PII redaction using built-in .NET features, developers must integrate the **Microsoft.Extensions.Compliance.Redaction** package and configure redaction policies within their application's code. This involves defining data classifications, registering redaction services, and annotating sensitive data parameters in logging calls. For detailed instructions, visit [Microsoft Learn - Redact sensitive data](https://learn.microsoft.com/en-us/dotnet/core/extensions/redaction).
+
+### Validation Errors
+- Sanitize user input before including in validation error messages
+- Avoid reflecting raw user input that could enable XSS attacks
+
+```csharp
+// ❌ BAD - Could reflect malicious input
+return Result.ValidationError($"Invalid value: {userInput}");
+
+// ✅ GOOD - Sanitized or generic message
+return Result.ValidationError("Invalid email format");
+```
+
+### API Response Handling
+- Use appropriate HTTP status codes via `ApiResponseHelper`
+- Don't expose stack traces or internal errors to clients
+- Implement proper error logging before returning results
+
+```csharp
+// ✅ GOOD - Structured error handling
+var result = await _service.ProcessData(data);
+if (!result.IsSuccess)
+{
+    _logger.LogWarning("Processing failed: {Errors}", result.Errors);
+}
+return ApiResponseHelper.ResponseOutcome(result, this);
+```
+
+### Thread Safety
+- Result objects are immutable and thread-safe
+- Safe to share across async operations and threads
 
 ## .NET Targeting
 
