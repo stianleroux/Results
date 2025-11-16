@@ -13,24 +13,22 @@ jobs:
         dotnet: ['10.0.x']
         framework:
           - net10.0
-        include:
-          - dotnet: '10.0.x'
-            framework: net10.0
+          - netstandard2.0
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
-        id: stepid
         with:
           dotnet-version: ${{ matrix.dotnet }}
           cache: true
+          cache-dependency-path: '**/packages.lock.json'
 
       - name: Clean build
         run: dotnet clean
 
       - name: Restore dependencies
-        run: dotnet restore --framework ${{ matrix.framework }} /p:RestoreLockedMode=false
+        run: dotnet restore --framework ${{ matrix.framework }}
 
       - name: Build
         run: dotnet build --no-restore --framework ${{ matrix.framework }}
