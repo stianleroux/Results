@@ -6,55 +6,49 @@ using Results.Models;
 
 /// <summary>
 /// Provides helper methods to translate <see cref="Result"/> or <see cref="Result{T}"/> into appropriate <see cref="ActionResult"/> responses.
+/// Maps library result semantics (validation, not found, general error) to HTTP result types.
 /// </summary>
-public static class ApiResponseHelper
+public static class ApiResponseExtensions
 {
     /// <summary>
-    /// Maps a <see cref="Result{T}"/> to an appropriate <see cref="ActionResult{T}"/> based on the error result.
+    /// Extension group for converting a generic <see cref="Result{T}"/> into an <see cref="ActionResult{Result{T}}"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the result's value.</typeparam>
-    /// <param name="result">The result object to process.</param>
-    /// <param name="controller">The controller instance used to generate the HTTP response.</param>
-    /// <returns>
-    /// A corresponding <see cref="ActionResult{T}"/>:
-    /// <list type="bullet">
-    /// <item><description>500 Internal Server Error if <see cref="ErrorResults.GeneralError"/>.</description></item>
-    /// <item><description>400 Bad Request if <see cref="ErrorResults.ValidationError"/>.</description></item>
-    /// <item><description>404 Not Found if <see cref="ErrorResults.NotFound"/>.</description></item>
-    /// <item><description>200 OK otherwise.</description></item>
-    /// </list>
-    /// </returns>
-    public static ActionResult<Result<T>> ResponseOutcome<T>(Result<T> result, ControllerBase controller)
-        => result.Match<T, ActionResult<Result<T>>>(
-            onSuccess: _ => controller.Ok(result),
-            onFailure: _ => result.ErrorResult switch
-            {
-                ErrorResults.ValidationError => controller.BadRequest(result),
-                ErrorResults.NotFound => controller.NotFound(result),
-                _ => controller.StatusCode(500, result)
-            });
+    extension<T>(Result<T> result)
+    {
+        /// <summary>
+        /// Converts the provided <paramref name="result"/> into an <see cref="ActionResult{Result{T}}"/>.
+        /// Returns 200 (OK) for success, 400 (BadRequest) for validation errors, 404 (NotFound) when not found,
+        /// or 500 (Internal Server Error) for other failures.
+        /// </summary>
+        /// <returns>An <see cref="ActionResult{Result{T}}"/> representing the appropriate HTTP response.</returns>
+        public ActionResult<Result<T>> ToActionResult() => result.IsSuccess
+                ? (ActionResult<Result<T>>)new OkObjectResult(result)
+                : (ActionResult<Result<T>>)(result.ErrorResult switch
+                {
+                    ErrorResults.ValidationError => new BadRequestObjectResult(result),
+                    ErrorResults.NotFound => new NotFoundObjectResult(result),
+                    _ => new ObjectResult(result) { StatusCode = 500 }
+                });
+    }
 
     /// <summary>
-    /// Maps a non-generic <see cref="Result"/> to an appropriate <see cref="ActionResult"/> based on the error result.
+    /// Extension group for converting a non-generic <see cref="Result"/> into an <see cref="ActionResult{Result}"/>.
     /// </summary>
-    /// <param name="result">The result object to process.</param>
-    /// <param name="controller">The controller instance used to generate the HTTP response.</param>
-    /// <returns>
-    /// A corresponding <see cref="ActionResult"/>:
-    /// <list type="bullet">
-    /// <item><description>500 Internal Server Error if <see cref="ErrorResults.GeneralError"/>.</description></item>
-    /// <item><description>400 Bad Request if <see cref="ErrorResults.ValidationError"/>.</description></item>
-    /// <item><description>404 Not Found if <see cref="ErrorResults.NotFound"/>.</description></item>
-    /// <item><description>200 OK otherwise.</description></item>
-    /// </list>
-    /// </returns>
-    public static ActionResult<Result> ResponseOutcome(Result result, ControllerBase controller)
-        => result.Match<ActionResult<Result>>(
-            onSuccess: _ => controller.Ok(result),
-            onFailure: _ => result.ErrorResult switch
-            {
-                ErrorResults.ValidationError => controller.BadRequest(result),
-                ErrorResults.NotFound => controller.NotFound(result),
-                _ => controller.StatusCode(500, result)
-            });
+    extension(Result result)
+    {
+        /// <summary>
+        /// Converts the provided non-generic <paramref name="result"/> into an <see cref="ActionResult{Result}"/>.
+        /// Returns 200 (OK) for success, 400 (BadRequest) for validation errors, 404 (NotFound) when not found,
+        /// or 500 (Internal Server Error) for other failures.
+        /// </summary>
+        /// <returns>An <see cref="ActionResult{Result}"/> representing the appropriate HTTP response.</returns>
+        public ActionResult<Result> ToActionResult() => result.IsSuccess
+                ? (ActionResult<Result>)new OkObjectResult(result)
+                : (ActionResult<Result>)(result.ErrorResult switch
+                {
+                    ErrorResults.ValidationError => new BadRequestObjectResult(result),
+                    ErrorResults.NotFound => new NotFoundObjectResult(result),
+                    _ => new ObjectResult(result) { StatusCode = 500 }
+                });
+    }
 }

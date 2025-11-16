@@ -4,12 +4,18 @@ using System.ComponentModel;
 
 public static class EnumExtensions
 {
-    public static string GetDescription(this Enum value)
+    extension(Enum value)
     {
-        var fi = value.GetType().GetField(value.ToString());
+        public string GetDescription()
+        {
+            var field = value.GetType().GetField(value.ToString());
+            if (field is null)
+            {
+                return value.ToString();
+            }
 
-        return fi.GetCustomAttributes(typeof(DescriptionAttribute), false) is DescriptionAttribute[] attributes && attributes.Length != 0
-            ? attributes.First().Description
-            : value.ToString();
+            var attributes = field.GetCustomAttributes(typeof(DescriptionAttribute), false) as DescriptionAttribute[];
+            return attributes is not null && attributes.Length > 0 ? attributes[0].Description : value.ToString();
+        }
     }
 }

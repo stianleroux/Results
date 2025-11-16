@@ -5,49 +5,59 @@ using Results.Models;
 
 public static class PagingExtensions
 {
-    public static IQueryable<T> ApplyPaging<T>(this IQueryable<T> query, Paging? pagingArgs)
+    // Instance extension block (for IQueryable<T> and List<T>)
+    extension<T>(IQueryable<T> query)
     {
-        var args = pagingArgs ?? Paging.Default;
-        return args.UsePaging ? query.Skip(args.SkipAmount).Take(args.PageSize) : query;
+        public IQueryable<T> ApplyPaging(Paging? pagingArgs)
+        {
+            var args = pagingArgs ?? Paging.Default;
+
+            return !args.UsePaging ? query : query.Skip(args.SkipAmount).Take(args.PageSize);
+        }
     }
 
-    public static IQueryable<T> ApplyPaging<T>(this List<T> query, Paging? pagingArgs)
-        => query.AsQueryable().ApplyPaging(pagingArgs);
-
-    public static bool IsObjectNullOrEmpty(object? myObject)
+    extension<T>(List<T> list)
     {
-        if (myObject is null)
+        public IQueryable<T> ApplyPaging(Paging? pagingArgs)
+            => list.AsQueryable().ApplyPaging(pagingArgs);
+    }
+
+    // Static extension block (no instance, for utility-ish method)
+    extension(PagingExtensions)
+    {
+        public static bool IsObjectNullOrEmpty(object? instance)
         {
-            return true;
+            if (instance is null)
+            {
+                return true;
+            }
+
+            foreach (var prop in instance.GetType().GetProperties())
+            {
+                var value = prop.GetValue(instance);
+                if (value is null)
+                {
+                    return true;
+                }
+
+                if (value is string s && string.IsNullOrWhiteSpace(s))
+                {
+                    return true;
+                }
+
+                if (value is IEnumerable enumerable && !enumerable.Cast<object>().Any())
+                {
+                    return true;
+                }
+
+                if (prop.PropertyType.IsValueType
+                    && value.Equals(Activator.CreateInstance(prop.PropertyType)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
-
-        foreach (var property in myObject.GetType().GetProperties())
-        {
-            var value = property.GetValue(myObject);
-            if (value is null)
-            {
-                continue;
-            }
-
-            // Check for empty strings
-            if (value is string str && string.IsNullOrWhiteSpace(str))
-            {
-                return true;
-            }
-
-            // Check for empty collections
-            if (value is IEnumerable enumerable && !enumerable.Cast<object>().Any())
-            {
-                return true;
-            }
-
-            // Check for default value types
-            if (property.PropertyType.IsValueType && value.Equals(Activator.CreateInstance(property.PropertyType)))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
