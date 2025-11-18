@@ -181,6 +181,108 @@ public class Result<T>
     /// <returns>A <see cref="Result{T}"/> instance with <see cref="ErrorResult"/> set to <see cref="ErrorResults.NotFound"/>.</returns>
     public static Result<T> NotFound(string? message = null)
         => new() { ErrorResult = ErrorResults.NotFound, Message = message };
+
+    /// <summary>
+    /// Creates a failed result indicating that the operation is unauthorized.
+    /// </summary>
+    /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
+    /// <returns>A <see cref="Result{T}"/> instance with <see cref="ErrorResult"/> set to <see cref="ErrorResults.Unauthorized"/>.</returns>
+    public static Result<T> Unauthorized(string? message = null)
+        => new() { ErrorResult = ErrorResults.Unauthorized, Message = message };
+
+    /// <summary>
+    /// Creates a failed result indicating that the operation is forbidden.
+    /// </summary>
+    /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
+    /// <returns>A <see cref="Result{T}"/> instance with <see cref="ErrorResult"/> set to <see cref="ErrorResults.Forbidden"/>.</returns>
+    public static Result<T> Forbidden(string? message = null)
+        => new() { ErrorResult = ErrorResults.Forbidden, Message = message };
+
+    /// <summary>
+    /// Gets a value indicating whether the operation failed.
+    /// </summary>
+    /// <value>
+    /// <c>true</c> if <see cref="IsSuccess"/> is <c>false</c>; otherwise, <c>false</c>.
+    /// </value>
+    public bool IsFailure => !IsSuccess;
+
+    /// <summary>
+    /// Returns the data if successful, otherwise throws an <see cref="InvalidOperationException"/>.
+    /// </summary>
+    /// <returns>The data payload if the operation was successful.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the result is not successful.</exception>
+    public T GetValueOrThrow()
+    {
+        if (!IsSuccess)
+        {
+            var errorMessage = string.IsNullOrEmpty(Message) 
+                ? string.Join(", ", this.Errors.Count > 0 ? this.Errors : ["Unknown error"]) 
+                : Message;
+            throw new InvalidOperationException($"Result failed: {errorMessage}");
+        }
+        return this.Data!;
+    }
+
+    /// <summary>
+    /// Returns the data if successful, otherwise returns the provided default value.
+    /// </summary>
+    /// <param name="defaultValue">The value to return if the operation failed.</param>
+    /// <returns>The data payload if successful, otherwise the default value.</returns>
+    public T? GetValueOrDefault(T? defaultValue = default)
+        => IsSuccess ? this.Data : defaultValue;
+
+    /// <summary>
+    /// Sets the data for this result and returns itself for method chaining.
+    /// </summary>
+    /// <param name="data">The data to set.</param>
+    /// <returns>This <see cref="Result{T}"/> instance for method chaining.</returns>
+    public Result<T> WithData(T? data)
+    {
+        this.Data = data;
+        return this;
+    }
+
+    /// <summary>
+    /// Adds an error message to this result. If the result was successful, sets it to <see cref="ErrorResults.GeneralError"/>.
+    /// </summary>
+    /// <param name="error">The error message to add.</param>
+    /// <returns>This <see cref="Result{T}"/> instance for method chaining.</returns>
+    public Result<T> AddError(string error)
+    {
+        if (IsSuccess)
+        {
+            this.ErrorResult = ErrorResults.GeneralError;
+        }
+        this.Errors.Add(error);
+        return this;
+    }
+
+    /// <summary>
+    /// Combines this result with another result. If both are successful, returns the first success.
+    /// If either is a failure, combines all errors.
+    /// </summary>
+    /// <param name="other">The result to combine with.</param>
+    /// <returns>A new <see cref="Result{T}"/> with combined success/failure state.</returns>
+    public Result<T> CombineWith(Result<T> other)
+    {
+        if (IsSuccess && other.IsSuccess)
+            return this;
+
+        var errors = new List<string>();
+        if (!IsSuccess)
+            errors.AddRange(this.Errors);
+        if (!other.IsSuccess)
+            errors.AddRange(other.Errors);
+
+        return Failure(errors);
+    }
+
+    /// <summary>
+    /// Implicitly converts an <see cref="Exception"/> to a failed <see cref="Result{T}"/>.
+    /// </summary>
+    /// <param name="exception">The exception to convert.</param>
+    public static implicit operator Result<T>(Exception exception)
+        => Failure(exception);
 }
 
 /// <summary>
@@ -273,4 +375,20 @@ public class Result : Result<object?>
     /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.NotFound"/>.</returns>
     public static new Result NotFound(string? message = null)
         => (Result)Result<object?>.NotFound(message);
+
+    /// <summary>
+    /// Creates a failed result indicating that the operation is unauthorized.
+    /// </summary>
+    /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
+    /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.Unauthorized"/>.</returns>
+    public static new Result Unauthorized(string? message = null)
+        => (Result)Result<object?>.Unauthorized(message);
+
+    /// <summary>
+    /// Creates a failed result indicating that the operation is forbidden.
+    /// </summary>
+    /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
+    /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.Forbidden"/>.</returns>
+    public static new Result Forbidden(string? message = null)
+        => (Result)Result<object?>.Forbidden(message);
 }

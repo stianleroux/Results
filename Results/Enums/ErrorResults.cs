@@ -17,6 +17,12 @@ public enum ErrorResults
     [Description("Not Found")]
     NotFound,
 
+    [Description("Unauthorized")]
+    Unauthorized,
+
+    [Description("Forbidden")]
+    Forbidden,
+
     [Description("Error")]
     GeneralError
 }

@@ -105,10 +105,12 @@ Never throw exceptions for expected business logic errors. Always return Result 
 -   Monadic composition (Bind): Chain result-producing operations.
 -   Mapping (Map, MapError): Transform values or errors.
 -   Pattern matching (Match): Handle success/failure paths cleanly.
+-   **New in v2:** Convenient helper methods - `IsFailure`, `GetValueOrThrow()`, `GetValueOrDefault()`, `WithData()`, `AddError()`, `CombineWith()`, implicit exception conversion
+-   **New in v2:** Additional error types - `Unauthorized` and `Forbidden` for comprehensive HTTP status mapping
 
 ## Return a Result
 
-A Result can store multiple Errors, NotFound or ValidationErrors.
+A Result can store multiple Errors, NotFound, Unauthorized, Forbidden, or ValidationErrors.
 
 ```csharp
 // return a result which indicates success
@@ -128,16 +130,39 @@ return Result<List<Sample>>.Success(paged, count);
 return Result.Failure("Error");
 return Result<List<Sample>>.Failure("Error");
 
-// return a validation failure with a single error message
+// return validation failures
 return Result<ProductDto>.ValidationFailure("Product name is required.");
 
-// return a validation failure with multiple field errors
 var validationErrors = new Dictionary<string, List<string>>
 {
     { "Name", new List<string> { "Product name is required." } },
     { "Price", new List<string> { "Price must be greater than 0." } }
 };
 return Result<ProductDto>.ValidationFailure(validationErrors);
+
+// return specific error types
+return Result<Product>.NotFound("Product not found");
+return Result<User>.Unauthorized("User is not authenticated");
+return Result<Document>.Forbidden("User does not have access to this document");
+
+// method chaining for building results
+var result = Result<User>.Success()
+    .WithData(user)
+    .AddError("Additional warning");
+
+// get value with fallback
+var user = Result<User>.Success(userData).GetValueOrDefault(defaultUser);
+
+// get value or throw
+var user = Result<User>.Success(userData).GetValueOrThrow(); // throws if failed
+
+// combine multiple results
+var result1 = ValidateProduct(product);
+var result2 = CheckInventory(product);
+var combined = result1.CombineWith(result2);
+
+// implicit conversion from exception
+Result<Product> result = new InvalidOperationException("Error occurred");
 ```
 
 ## Result on the API
@@ -160,6 +185,73 @@ Result<UserDto> result = GetUser(userId)
         onSuccess: dto => Ok(dto),
         onFailure: err => BadRequest(err)
     )
+```
+
+## New Helper Methods (v2)
+
+### Checking Result Status
+```csharp
+// Check if result failed
+if (result.IsFailure)
+{
+    // Handle error
+}
+
+// Get value or return default
+var user = result.GetValueOrDefault(defaultUser);
+
+// Get value or throw
+var user = result.GetValueOrThrow(); // throws InvalidOperationException if failed
+```
+
+### Building and Chaining Results
+```csharp
+// Set data after creation
+var result = Result<User>.Success()
+    .WithData(user);
+
+// Add errors incrementally
+var result = Result<Product>.Success()
+    .AddError("Warning 1")
+    .AddError("Warning 2");
+
+// Combine multiple results
+var result1 = ValidateProduct(product);
+var result2 = CheckInventory(product);
+var combined = result1.CombineWith(result2);
+```
+
+### Exception Conversion
+```csharp
+// Implicit conversion from exception to Result
+Result<Product> result = new InvalidOperationException("Database error");
+
+// Or explicit via Failure
+Result<Product> result = Result<Product>.Failure(exception);
+```
+
+## HTTP Status Mapping
+
+The Result library now supports comprehensive HTTP status code mapping:
+
+```csharp
+// 200 OK
+return Result<User>.Success(user);
+
+// 400 Bad Request (Validation)
+return Result<User>.ValidationFailure("Invalid email format");
+
+// 404 Not Found
+return Result<User>.NotFound("User not found");
+
+// 401 Unauthorized
+return Result<User>.Unauthorized("User is not authenticated");
+
+// 403 Forbidden
+return Result<Document>.Forbidden("User does not have access to this document");
+
+// 500 Internal Server Error
+return Result<User>.Failure("An unexpected error occurred");
 ```
 
 ## Security Best Practices
