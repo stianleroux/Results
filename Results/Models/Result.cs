@@ -155,6 +155,26 @@ public class Result<T>
         };
 
     /// <summary>
+    /// Creates a failed result with a single validation error message.
+    /// </summary>
+    /// <remarks>
+    /// This factory method is used when an operation fails due to a single validation error. The result's <see cref="ErrorResult"/> 
+    /// is set to <see cref="ErrorResults.ValidationError"/>, and the error message is stored as a generic validation error.
+    /// </remarks>
+    /// <param name="validationError">A validation error message.</param>
+    /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
+    /// <param name="data">Optional data to include with the validation failure result. Defaults to <c>default(<typeparamref name="T"/>)</c>.</param>
+    /// <returns>A <see cref="Result{T}"/> instance with <see cref="ErrorResult"/> set to <see cref="ErrorResults.ValidationError"/>.</returns>
+    public static Result<T> ValidationFailure(string validationError, string? message = null, T? data = default)
+        => new()
+        {
+            ErrorResult = ErrorResults.ValidationError,
+            ValidationErrors = new Dictionary<string, List<string>> { { "General", [validationError] } },
+            Message = message,
+            Data = data
+        };
+
+    /// <summary>
     /// Creates a failed result indicating that the requested resource was not found.
     /// </summary>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
@@ -232,6 +252,19 @@ public class Result : Result<object?>
     /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.ValidationError"/>.</returns>
     public static Result ValidationFailure(Dictionary<string, List<string>>? validationErrors = null, string? message = null)
         => (Result)Result<object?>.ValidationFailure(validationErrors, message);
+
+    /// <summary>
+    /// Creates a failed result with a single validation error message.
+    /// </summary>
+    /// <remarks>
+    /// This factory method is used when an operation fails due to a single validation error. The result's <see cref="Result{T}.ErrorResult"/> 
+    /// is set to <see cref="ErrorResults.ValidationError"/>, and the error message is stored as a generic validation error.
+    /// </remarks>
+    /// <param name="validationError">A validation error message.</param>
+    /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
+    /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.ValidationError"/>.</returns>
+    public static Result ValidationFailure(string validationError, string? message = null)
+        => (Result)Result<object?>.ValidationFailure(validationError, message);
 
     /// <summary>
     /// Creates a failed result indicating that the requested resource was not found.

@@ -36,7 +36,7 @@ return Result<List<User>>.Success(users, totalCount);
 return Result.Failure("Error message");
 return Result<User>.Failure("User not found");
 return Result<User>.NotFound("User not found");
-return Result<User>.ValidationError("Invalid email format");
+return Result<User>.ValidationFailure("Invalid email format");
 ```
 
 ## Functional Composition
@@ -127,6 +127,17 @@ return Result<List<Sample>>.Success(paged, count);
 // return a result which indicates failure
 return Result.Failure("Error");
 return Result<List<Sample>>.Failure("Error");
+
+// return a validation failure with a single error message
+return Result<ProductDto>.ValidationFailure("Product name is required.");
+
+// return a validation failure with multiple field errors
+var validationErrors = new Dictionary<string, List<string>>
+{
+    { "Name", new List<string> { "Product name is required." } },
+    { "Price", new List<string> { "Price must be greater than 0." } }
+};
+return Result<ProductDto>.ValidationFailure(validationErrors);
 ```
 
 ## Result on the API
