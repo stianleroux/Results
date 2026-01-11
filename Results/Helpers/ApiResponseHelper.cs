@@ -8,19 +8,19 @@ using Results.Models;
 /// Provides helper methods to translate <see cref="Result"/> or <see cref="Result{T}"/> into appropriate <see cref="ActionResult"/> responses.
 /// Maps library result semantics (validation, not found, general error) to HTTP result types.
 /// </summary>
-public static class ApiResponseExtensions
+public static class ApiResponseHelper
 {
     /// <summary>
-    /// Extension group for converting a generic <see cref="Result{T}"/> into an <see cref="ActionResult{Result{T}}"/>.
+    /// Extension group for converting a generic <see cref="Result{T}"/> into an <see cref="ActionResult"/>.
     /// </summary>
     extension<T>(Result<T> result)
     {
         /// <summary>
-        /// Converts the provided <paramref name="result"/> into an <see cref="ActionResult{Result{T}}"/>.
+        /// Converts the current <see cref="Result{T}"/> instance into an <see cref="ActionResult"/>.
         /// Returns 200 (OK) for success, 400 (BadRequest) for validation errors, 404 (NotFound) when not found,
         /// or 500 (Internal Server Error) for other failures.
         /// </summary>
-        /// <returns>An <see cref="ActionResult{Result{T}}"/> representing the appropriate HTTP response.</returns>
+        /// <returns>An <see cref="ActionResult"/> representing the appropriate HTTP response.</returns>
         public ActionResult<Result<T>> ToActionResult() => result.IsSuccess
                 ? (ActionResult<Result<T>>)new OkObjectResult(result)
                 : (ActionResult<Result<T>>)(result.ErrorResult switch
@@ -32,16 +32,16 @@ public static class ApiResponseExtensions
     }
 
     /// <summary>
-    /// Extension group for converting a non-generic <see cref="Result"/> into an <see cref="ActionResult{Result}"/>.
+    /// Extension group for converting a non-generic <see cref="Result"/> into an <see cref="ActionResult"/>.
     /// </summary>
     extension(Result result)
     {
         /// <summary>
-        /// Converts the provided non-generic <paramref name="result"/> into an <see cref="ActionResult{Result}"/>.
+        /// Converts the current non-generic <see cref="Result"/> instance into an <see cref="ActionResult"/>.
         /// Returns 200 (OK) for success, 400 (BadRequest) for validation errors, 404 (NotFound) when not found,
         /// or 500 (Internal Server Error) for other failures.
         /// </summary>
-        /// <returns>An <see cref="ActionResult{Result}"/> representing the appropriate HTTP response.</returns>
+        /// <returns>An <see cref="ActionResult"/> representing the appropriate HTTP response.</returns>
         public ActionResult<Result> ToActionResult() => result.IsSuccess
                 ? (ActionResult<Result>)new OkObjectResult(result)
                 : (ActionResult<Result>)(result.ErrorResult switch
