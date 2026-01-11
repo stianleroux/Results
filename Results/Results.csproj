@@ -14,7 +14,7 @@
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/stianleroux/Results</RepositoryUrl>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <Version>2.0.10</Version>
+        <Version>2.0.11</Version>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Authors>Stian Le Roux</Authors>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>

@@ -4,28 +4,21 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - 'README.md'
-      - '*.md'
+      - "README.md"
+      - "*.md"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        dotnet: ['10.0.x']
-        framework:
-          - net10.0
-          - netstandard2.0
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ matrix.dotnet }}
+          dotnet-version: "10.0.x"
           cache: true
-          cache-dependency-path: '**/packages.lock.json'
+          cache-dependency-path: "**/packages.lock.json"
 
       - name: Clean build
         run: dotnet clean
@@ -34,7 +27,7 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --no-restore --framework ${{ matrix.framework }}
+        run: dotnet build --no-restore
 
       - name: Test
-        run: dotnet test --no-build --verbosity normal --framework ${{ matrix.framework }}
+        run: dotnet test --no-build --verbosity normal
