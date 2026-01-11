@@ -289,7 +289,7 @@ public class Result<T>
 /// Represents a non-generic result object for operations that do not return typed data.
 /// </summary>
 /// <remarks>
-/// <see cref="Result"/> extends <see cref="Result{T}"/> with <typeparamref name="T"/> set to <see cref="object"/>.
+/// <see cref="Result"/> extends <see cref="Result{T}"/> with T set to <see cref="object"/>.
 /// Use this class for operations where you only care about success/failure state and error information, 
 /// not a specific data payload. All factory methods return <see cref="Result"/> instances instead of 
 /// <see cref="Result{T}"/> instances for convenience.
@@ -310,7 +310,7 @@ public class Result : Result<object?>
     /// </summary>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.IsSuccess"/> set to <c>true</c>.</returns>
-    public static new Result? Success(string? message = null)
+    public static Result? Success(string? message = null)
         => Success(null, 0, message) as Result;
 
     /// <summary>

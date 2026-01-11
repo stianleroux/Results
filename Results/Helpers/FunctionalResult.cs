@@ -22,7 +22,7 @@ public static class FunctionalResult
         /// <typeparam name="T2">The target type of the mapping function.</typeparam>
         /// <param name="map">Mapping function applied when the result is successful.</param>
         /// <returns>
-        /// A <see cref="Result{T2}"/> containing the mapped value when <paramref name="result"/> is successful,
+        /// A <see cref="Result{T2}"/> containing the mapped value when the source is successful,
         /// otherwise a failure result containing the same errors.
         /// </returns>
         public Result<T2> Map<T2>(Func<T1, T2> map)
@@ -37,7 +37,7 @@ public static class FunctionalResult
         /// <typeparam name="T2">The target result value type.</typeparam>
         /// <param name="bind">A function that produces a <see cref="Result{T2}"/> from the successful value.</param>
         /// <returns>
-        /// The <see cref="Result{T2}"/> returned by <paramref name="bind"/> when <paramref name="result"/> is successful,
+        /// The <see cref="Result{T2}"/> returned by <paramref name="bind"/> when the source is successful,
         /// otherwise a failure result with the original errors.
         /// </returns>
         public Result<T2> Bind<T2>(Func<T1, Result<T2>> bind)
@@ -51,7 +51,7 @@ public static class FunctionalResult
         /// </summary>
         /// <param name="map">Function that converts the existing error list into a single error string.</param>
         /// <returns>
-        /// A successful <see cref="Result{T1}"/> when <paramref name="result"/> is successful,
+        /// A successful <see cref="Result{T1}"/> when the source is successful,
         /// otherwise a failure result containing the mapped single error.
         /// </returns>
         public Result<T1> MapError(Func<List<string>, string> map)
@@ -65,7 +65,7 @@ public static class FunctionalResult
         /// </summary>
         /// <param name="map">Function that converts the existing error list into a new error list.</param>
         /// <returns>
-        /// A successful <see cref="Result{T1}"/> when <paramref name="result"/> is successful,
+        /// A successful <see cref="Result{T1}"/> when the source is successful,
         /// otherwise a failure result containing the mapped error list.
         /// </returns>
         public Result<T1> MapError(Func<List<string>, List<string>> map)
@@ -108,10 +108,10 @@ public static class FunctionalResult
         }
 
         /// <summary>
-        /// Asynchronously binds (flatMaps) the successful value using a function that returns a <see cref="Task{Result{T2}}"/>.
+        /// Asynchronously binds (flatMaps) the successful value using a function that returns a <see cref="Task{Result}"/>.
         /// </summary>
         /// <typeparam name="T2">The target result value type.</typeparam>
-        /// <param name="bind">A function that produces a <see cref="Task{Result{T2}}"/> from the successful value.</param>
+        /// <param name="bind">A function that produces a <see cref="Task{Result}"/> from the successful value.</param>
         /// <returns>A task containing the <see cref="Result{T2}"/> produced by <paramref name="bind"/> or the original errors.</returns>
         public async Task<Result<T2>> BindAsync<T2>(Func<T1, Task<Result<T2>>> bind)
         {

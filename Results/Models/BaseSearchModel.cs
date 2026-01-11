@@ -57,6 +57,27 @@ namespace Results.Models
     /// Represents a search model with optional ordering and paging parameters.
     /// </summary>
     /// <typeparam name="T">The entity type being searched.</typeparam>
+    /// <example>
+    /// Example usage of <see cref="SearchModel{T}"/> with EF Core.
+    /// <code>
+    /// var search = new SearchModel&lt;User&gt;
+    /// {
+    ///     Order = new OrderByExpression&lt;User&gt;(u =&gt; u.LastName, SortDirection.Ascending),
+    ///     PagingArgs = new Paging { Page = 1, PageSize = 20 }
+    /// };
+    ///
+    /// var query = dbContext.Users.AsQueryable();
+    ///
+    /// if (search.Order is not null)
+    /// {
+    ///     query = search.Order.Direction == SortDirection.Ascending
+    ///         ? query.OrderBy(search.Order.Property)
+    ///         : query.OrderByDescending(search.Order.Property);
+    /// }
+    ///
+    /// query = query.ApplyPaging(search.PagingArgs);
+    /// </code>
+    /// </example>
     public class SearchModel<T>
     {
         /// <summary>
@@ -68,29 +89,5 @@ namespace Results.Models
         /// Gets or sets the paging parameters for the search query.
         /// </summary>
         public Paging PagingArgs { get; set; } = Paging.Default;
-
-        /// <summary>
-        /// Example usage of <see cref="SearchModel{T}"/> with EF Core.
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// var search = new SearchModel&lt;User&gt;
-        /// {
-        ///     Order = new OrderByExpression&lt;User&gt;(u =&gt; u.LastName, SortDirection.Ascending),
-        ///     PagingArgs = new Paging { Page = 1, PageSize = 20 }
-        /// };
-        ///
-        /// var query = dbContext.Users.AsQueryable();
-        ///
-        /// if (search.Order is not null)
-        /// {
-        ///     query = search.Order.Direction == SortDirection.Ascending
-        ///         ? query.OrderBy(search.Order.Property)
-        ///         : query.OrderByDescending(search.Order.Property);
-        /// }
-        ///
-        /// query = query.ApplyPaging(search.PagingArgs);
-        /// </code>
-        /// </example>
     }
 }
