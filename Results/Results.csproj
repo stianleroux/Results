@@ -13,8 +13,9 @@
         <PackageId>SLR.Results</PackageId>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/stianleroux/Results</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/stianleroux/Results</PackageProjectUrl>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <Version>2.0.11</Version>
+        <Version>2.0.12</Version>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Authors>Stian Le Roux</Authors>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
