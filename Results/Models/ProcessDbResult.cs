@@ -30,10 +30,10 @@ public static class DbResultProcessor
     /// <param name="dbRowsAffected">Number of rows affected.</param>
     /// <param name="errorMessage">Optional custom error message.</param>
     /// <returns>A <see cref="Result"/> representing success or failure.</returns>
-    public static Result? Outcome(int dbRowsAffected, string? errorMessage = null)
-        => dbRowsAffected > 0
-            ? Result.Success()
-            : Result.Failure(string.IsNullOrWhiteSpace(errorMessage)
+    public static Result Outcome(int dbRowsAffected, string? errorMessage = null)
+        => dbRowsAffected <= 0
+            ? Result.Failure(string.IsNullOrWhiteSpace(errorMessage)
                 ? "Database operation failed."
-                : errorMessage.Trim());
+                : errorMessage.Trim())!
+            : Result.Success()!;
 }
