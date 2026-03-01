@@ -31,13 +31,13 @@ Result<T>.Failure(exception)                       // From exception
 Use `DbResultProcessor<T>` for operations returning data:
 ```csharp
 var rowsAffected = await _context.SaveChangesAsync();
-return DbResultProcessor<Product>.Outcome(product, rowsAffected);
+return DbResultProcessor<Product>.Outcome(data: product, dbRowsAffected: rowsAffected);
 ```
 
 Use `DbResultProcessor` (non-generic) for operations without data:
 ```csharp
 var rowsAffected = await _context.SaveChangesAsync();
-return DbResultProcessor.Outcome(rowsAffected);
+return DbResultProcessor.Outcome(dbRowsAffected: rowsAffected);
 ```
 
 ## Functional Composition

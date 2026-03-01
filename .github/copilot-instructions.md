@@ -132,8 +132,8 @@ public async Task<Result<Product>> UpdateProduct(Product product)
 {
     var rowsAffected = await _context.SaveChangesAsync();
     return DbResultProcessor<Product>.Outcome(
-        product, 
-        rowsAffected, 
+        data: product, 
+        dbRowsAffected: rowsAffected, 
         errorMessage: "Failed to update product"
     );
 }
@@ -151,7 +151,7 @@ public async Task<Result> DeleteProduct(int id)
     var rowsAffected = await _context.SaveChangesAsync();
     
     return DbResultProcessor.Outcome(
-        rowsAffected, 
+        dbRowsAffected: rowsAffected, 
         errorMessage: "Failed to delete product"
     );
 }
@@ -277,7 +277,7 @@ public class UserRepository : IUserRepository
     {
         await _context.Users.AddAsync(user, cancellationToken);
         var rowsAffected = await _context.SaveChangesAsync(cancellationToken);
-        return DbResultProcessor<User>.Outcome(user, rowsAffected);
+        return DbResultProcessor<User>.Outcome(data: user, dbRowsAffected: rowsAffected);
     }
 }
 ```

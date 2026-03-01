@@ -63,7 +63,7 @@ public async Task<Result<{Entity}>> CreateAsync({Entity} entity, CancellationTok
 {
     await _context.{Entities}.AddAsync(entity, cancellationToken);
     var rowsAffected = await _context.SaveChangesAsync(cancellationToken);
-    return DbResultProcessor<{Entity}>.Outcome(entity, rowsAffected, "Failed to create {entity}");
+    return DbResultProcessor<{Entity}>.Outcome(data: entity, dbRowsAffected: rowsAffected, errorMessage: "Failed to create {entity}");
 }
 
 public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
@@ -73,7 +73,7 @@ public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToke
     
     _context.{Entities}.Remove(entity);
     var rowsAffected = await _context.SaveChangesAsync(cancellationToken);
-    return DbResultProcessor.Outcome(rowsAffected, "Failed to delete {entity}");
+    return DbResultProcessor.Outcome(dbRowsAffected: rowsAffected, errorMessage: "Failed to delete {entity}");
 }
 ```
 

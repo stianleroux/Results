@@ -83,8 +83,8 @@ public async Task<Result<Product>> UpdateProduct(Product product)
 {
     var rowsAffected = await _context.SaveChangesAsync();
     return DbResultProcessor<Product>.Outcome(
-        product, 
-        rowsAffected, 
+        data: product, 
+        dbRowsAffected: rowsAffected, 
         errorMessage: "Failed to update"
     );
 }
@@ -96,7 +96,7 @@ public async Task<Result> DeleteProduct(int id)
 {
     var rowsAffected = await _context.SaveChangesAsync();
     return DbResultProcessor.Outcome(
-        rowsAffected, 
+        dbRowsAffected: rowsAffected, 
         errorMessage: "Failed to delete"
     );
 }
@@ -243,7 +243,7 @@ public class UsersController : ControllerBase
 | User not logged in | `Result<T>.Unauthorized("message")` |
 | User lacks permission | `Result<T>.Forbidden("message")` |
 | System/unexpected error | `Result<T>.Failure("message")` |
-| DB save operation | `DbResultProcessor<T>.Outcome(entity, rows)` |
+| DB save operation | `DbResultProcessor<T>.Outcome(data, rows)` |
 | Chaining operations | `.Bind()` or `.BindAsync()` |
 | Transforming data | `.Map()` or `.MapAsync()` |
 | Pattern matching | `.Match(onSuccess, onFailure)` |
