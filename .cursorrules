@@ -1,0 +1,145 @@
+# SLR.Results Package - Cursor AI Rules
+
+## Core Pattern
+This project uses the SLR.Results package for error handling. Never throw exceptions for business logic errors. Always use Result types.
+
+## Return Types
+- `Result` ? for operations without return data (void equivalent)
+- `Result<T>` ? for operations returning single values
+- `Result<List<T>>` ? for collections with paging support (includes Count property)
+
+## Factory Methods by Scenario
+
+### Success
+```csharp
+Result.Success()
+Result<User>.Success(user)
+Result<List<Product>>.Success(products, totalCount)
+```
+
+### Failures
+```csharp
+Result.Failure("Error message")                    // General error (500)
+Result<T>.NotFound("Not found message")            // 404
+Result<T>.Unauthorized("Auth message")             // 401
+Result<T>.Forbidden("Permission message")          // 403
+Result<T>.ValidationFailure(validationErrors)      // 400
+Result<T>.Failure(exception)                       // From exception
+```
+
+## Database Operations
+Use `DbResultProcessor<T>` for operations returning data:
+```csharp
+var rowsAffected = await _context.SaveChangesAsync();
+return DbResultProcessor<Product>.Outcome(product, rowsAffected);
+```
+
+Use `DbResultProcessor` (non-generic) for operations without data:
+```csharp
+var rowsAffected = await _context.SaveChangesAsync();
+return DbResultProcessor.Outcome(rowsAffected);
+```
+
+## Functional Composition
+Chain operations using these methods:
+- `.Map(x => transform)` ? Transform success value
+- `.Bind(x => nextResult)` ? Chain Result-producing operations
+- `.MapError(errors => newErrors)` ? Transform error messages
+- `.Match(onSuccess, onFailure)` ? Pattern match both cases
+
+All have async variants: `.MapAsync()`, `.BindAsync()`, `.MatchAsync()`
+
+Example:
+```csharp
+return await GetUserAsync(id)
+    .BindAsync(user => ValidateUserAsync(user))
+    .MapAsync(user => new UserDto(user));
+```
+
+## API Controllers
+Always use ApiResponseHelper for consistent responses:
+```csharp
+[HttpGet("{id}")]
+public async Task<ActionResult<Result<UserDto>>> GetUser(int id, CancellationToken cancellationToken)
+{
+    var result = await _mediator.Send(new GetUserQuery(id), cancellationToken);
+    return ApiResponseHelper.ResponseOutcome(result, this);
+}
+```
+
+Or use extension method:
+```csharp
+return result.ToActionResult();
+```
+
+## Repository Pattern
+Repositories should return Result types:
+```csharp
+public interface IUserRepository
+{
+    Task<Result<User>> GetByIdAsync(int id, CancellationToken ct = default);
+    Task<Result<List<User>>> GetAllAsync(CancellationToken ct = default);
+    Task<Result<User>> CreateAsync(User user, CancellationToken ct = default);
+    Task<Result> DeleteAsync(int id, CancellationToken ct = default);
+}
+```
+
+## Paging
+For paginated queries:
+1. Inherit search models from `BaseSearchModel`
+2. Get count before applying paging
+3. Use `.ApplyPaging(model.PagingArgs)` extension
+4. Return with `Success(data, count)`
+
+```csharp
+var count = await query.CountAsync();
+var items = await query.ApplyPaging(model.PagingArgs).ToListAsync();
+return Result<List<T>>.Success(items, count);
+```
+
+## Security Rules
+1. **Never** include sensitive data in error messages (PII, passwords, connection strings)
+2. **Always** log detailed errors server-side, return generic messages to clients
+3. **Never** reflect raw user input in error messages (XSS risk)
+4. Use structured logging: `_logger.LogError("Error: {ErrorId}", errorId)`
+
+## Validation Errors
+Structure validation errors as Dictionary<string, List<string>>:
+```csharp
+var errors = new Dictionary<string, List<string>>
+{
+    { "Email", new List<string> { "Email is required", "Email format is invalid" } },
+    { "Password", new List<string> { "Password must be at least 8 characters" } }
+};
+return Result<User>.ValidationFailure(errors);
+```
+
+## Result Helper Methods (v2+)
+```csharp
+result.IsFailure                           // Check if failed
+result.GetValueOrDefault(defaultValue)     // Safe value extraction
+result.GetValueOrThrow()                   // Throws if failed
+result.WithData(data)                      // Set data (fluent)
+result.AddError("error")                   // Add error (fluent)
+result1.CombineWith(result2)               // Combine results
+Result<T> result = new Exception("msg")    // Implicit conversion
+```
+
+## Code Generation Checklist
+When generating new code:
+- [ ] All methods that can fail return Result or Result<T>
+- [ ] API endpoints use ApiResponseHelper or .ToActionResult()
+- [ ] Database operations use DbResultProcessor
+- [ ] No business logic exceptions thrown
+- [ ] No sensitive data in error messages
+- [ ] CancellationToken passed through async chains
+- [ ] Paged queries use BaseSearchModel and ApplyPaging()
+- [ ] Validation errors use ValidationFailure() with structured errors
+- [ ] Appropriate error types used (NotFound, Unauthorized, Forbidden, etc.)
+
+## Anti-Patterns to Avoid
+? Throwing exceptions for business logic
+? Mixing exception-based and Result-based error handling
+? Ignoring Result.IsSuccess checks before accessing Data
+? Exposing stack traces, connection strings, or PII in errors
+? Manually creating ObjectResult in controllers (use ApiResponseHelper)

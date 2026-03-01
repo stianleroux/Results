@@ -10,6 +10,15 @@ You can install [SLR.Results with NuGet](https://www.nuget.org/packages/SLR.Resu
 Install-Package SLR.Results
 ```
 
+## AI Assistant Instructions
+
+For AI code assistants to better understand and use this library, see:
+- **GitHub Copilot**: [`.github/copilot-instructions.md`](.github/copilot-instructions.md)
+- **Cursor AI**: [`.cursorrules`](.cursorrules)
+- **Other AI Assistants**: [`.github/ai-agent-instructions.md`](.github/ai-agent-instructions.md)
+
+These files provide comprehensive guidance on Result pattern usage, factory methods, functional composition, and security best practices.
+
 ## GitHub Copilot Instructions
 
 To help GitHub Copilot better understand and use the SLR.Results package in your C# projects, add these instructions to your `.github/copilot-instructions.md` file:
