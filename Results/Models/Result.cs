@@ -102,7 +102,7 @@ public class Result<T>
     /// <param name="count">The total count of items, typically used for paging. Defaults to 0.</param>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result{T}"/> instance with <see cref="IsSuccess"/> set to <c>true</c>.</returns>
-    public static Result<T> Success(T? data = default, int count = 0, string? message = null)
+    public static Result<T?> Success(T? data = default, int count = 0, string? message = null)
         => new() { Data = data, Count = count, Message = message };
 
     /// <summary>
@@ -111,7 +111,7 @@ public class Result<T>
     /// <param name="errors">A list of error messages. If <c>null</c>, an empty list is used.</param>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result{T}"/> instance with <see cref="ErrorResult"/> set to <see cref="ErrorResults.GeneralError"/>.</returns>
-    public static Result<T> Failure(List<string>? errors = null, string? message = null)
+    public static Result<T?> Failure(List<string>? errors = null, string? message = null)
         => new() { ErrorResult = ErrorResults.GeneralError, Errors = errors ?? [], Message = message };
 
     /// <summary>
@@ -120,7 +120,7 @@ public class Result<T>
     /// <param name="error">The error message.</param>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result{T}"/> instance with <see cref="ErrorResult"/> set to <see cref="ErrorResults.GeneralError"/>.</returns>
-    public static Result<T> Failure(string error, string? message = null)
+    public static Result<T?> Failure(string error, string? message = null)
         => Failure([error], message);
 
     /// <summary>
@@ -131,7 +131,7 @@ public class Result<T>
     /// </remarks>
     /// <param name="exception">The exception to extract error information from.</param>
     /// <returns>A <see cref="Result{T}"/> instance with <see cref="ErrorResult"/> set to <see cref="ErrorResults.GeneralError"/>.</returns>
-    public static Result<T> Failure(Exception exception)
+    public static Result<T?> Failure(Exception exception)
         => Failure([exception?.Message ?? "Unknown error"], exception?.InnerException?.Message);
 
     /// <summary>
@@ -145,7 +145,7 @@ public class Result<T>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <param name="data">Optional data to include with the validation failure result. Defaults to <c>default(<typeparamref name="T"/>)</c>.</param>
     /// <returns>A <see cref="Result{T}"/> instance with <see cref="ErrorResult"/> set to <see cref="ErrorResults.ValidationError"/>.</returns>
-    public static Result<T> ValidationFailure(Dictionary<string, List<string>>? validationErrors = null, string? message = null, T? data = default)
+    public static Result<T?> ValidationFailure(Dictionary<string, List<string>>? validationErrors = null, string? message = null, T? data = default)
         => new()
         {
             ErrorResult = ErrorResults.ValidationError,
@@ -165,7 +165,7 @@ public class Result<T>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <param name="data">Optional data to include with the validation failure result. Defaults to <c>default(<typeparamref name="T"/>)</c>.</param>
     /// <returns>A <see cref="Result{T}"/> instance with <see cref="ErrorResult"/> set to <see cref="ErrorResults.ValidationError"/>.</returns>
-    public static Result<T> ValidationFailure(string validationError, string? message = null, T? data = default)
+    public static Result<T?> ValidationFailure(string validationError, string? message = null, T? data = default)
         => new()
         {
             ErrorResult = ErrorResults.ValidationError,
@@ -179,7 +179,7 @@ public class Result<T>
     /// </summary>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result{T}"/> instance with <see cref="ErrorResult"/> set to <see cref="ErrorResults.NotFound"/>.</returns>
-    public static Result<T> NotFound(string? message = null)
+    public static Result<T?> NotFound(string? message = null)
         => new() { ErrorResult = ErrorResults.NotFound, Message = message };
 
     /// <summary>
@@ -187,7 +187,7 @@ public class Result<T>
     /// </summary>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result{T}"/> instance with <see cref="ErrorResult"/> set to <see cref="ErrorResults.Unauthorized"/>.</returns>
-    public static Result<T> Unauthorized(string? message = null)
+    public static Result<T?> Unauthorized(string? message = null)
         => new() { ErrorResult = ErrorResults.Unauthorized, Message = message };
 
     /// <summary>
@@ -195,7 +195,7 @@ public class Result<T>
     /// </summary>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result{T}"/> instance with <see cref="ErrorResult"/> set to <see cref="ErrorResults.Forbidden"/>.</returns>
-    public static Result<T> Forbidden(string? message = null)
+    public static Result<T?> Forbidden(string? message = null)
         => new() { ErrorResult = ErrorResults.Forbidden, Message = message };
 
     /// <summary>
@@ -204,7 +204,7 @@ public class Result<T>
     /// <value>
     /// <c>true</c> if <see cref="IsSuccess"/> is <c>false</c>; otherwise, <c>false</c>.
     /// </value>
-    public bool IsFailure => !IsSuccess;
+    public bool IsFailure => !this.IsSuccess;
 
     /// <summary>
     /// Returns the data if successful, otherwise throws an <see cref="InvalidOperationException"/>.
@@ -213,11 +213,11 @@ public class Result<T>
     /// <exception cref="InvalidOperationException">Thrown when the result is not successful.</exception>
     public T GetValueOrThrow()
     {
-        if (!IsSuccess)
+        if (!this.IsSuccess)
         {
-            var errorMessage = string.IsNullOrEmpty(Message) 
-                ? string.Join(", ", this.Errors.Count > 0 ? this.Errors : ["Unknown error"]) 
-                : Message;
+            var errorMessage = string.IsNullOrEmpty(this.Message)
+                ? string.Join(", ", this.Errors.Count > 0 ? this.Errors : ["Unknown error"])
+                : this.Message;
             throw new InvalidOperationException($"Result failed: {errorMessage}");
         }
         return this.Data!;
@@ -229,7 +229,7 @@ public class Result<T>
     /// <param name="defaultValue">The value to return if the operation failed.</param>
     /// <returns>The data payload if successful, otherwise the default value.</returns>
     public T? GetValueOrDefault(T? defaultValue = default)
-        => IsSuccess ? this.Data : defaultValue;
+        => this.IsSuccess ? this.Data : defaultValue;
 
     /// <summary>
     /// Sets the data for this result and returns itself for method chaining.
@@ -249,7 +249,7 @@ public class Result<T>
     /// <returns>This <see cref="Result{T}"/> instance for method chaining.</returns>
     public Result<T> AddError(string error)
     {
-        if (IsSuccess)
+        if (this.IsSuccess)
         {
             this.ErrorResult = ErrorResults.GeneralError;
         }
@@ -265,14 +265,21 @@ public class Result<T>
     /// <returns>A new <see cref="Result{T}"/> with combined success/failure state.</returns>
     public Result<T> CombineWith(Result<T> other)
     {
-        if (IsSuccess && other.IsSuccess)
+        if (this.IsSuccess && other.IsSuccess)
+        {
             return this;
+        }
 
         var errors = new List<string>();
-        if (!IsSuccess)
+        if (!this.IsSuccess)
+        {
             errors.AddRange(this.Errors);
+        }
+
         if (!other.IsSuccess)
+        {
             errors.AddRange(other.Errors);
+        }
 
         return Failure(errors);
     }
@@ -310,8 +317,12 @@ public class Result : Result<object?>
     /// </summary>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.IsSuccess"/> set to <c>true</c>.</returns>
-    public static Result? Success(string? message = null)
-        => Success(null, 0, message) as Result;
+    public static Result Success(string? message = null)
+        => new()
+        {
+            ErrorResult = ErrorResults.None,
+            Message = message
+        };
 
     /// <summary>
     /// Creates a failed result with the specified error messages.
@@ -320,7 +331,12 @@ public class Result : Result<object?>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.GeneralError"/>.</returns>
     public static new Result Failure(List<string>? errors = null, string? message = null)
-        => (Result)Result<object?>.Failure(errors, message);
+            => new()
+            {
+                ErrorResult = ErrorResults.GeneralError,
+                Message = message,
+                Errors = errors ?? []
+            };
 
     /// <summary>
     /// Creates a failed result with a single error message.
@@ -329,7 +345,12 @@ public class Result : Result<object?>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.GeneralError"/>.</returns>
     public static new Result Failure(string error, string? message = null)
-        => (Result)Result<object?>.Failure(error, message);
+        => new()
+        {
+            ErrorResult = ErrorResults.GeneralError,
+            Message = message,
+            Errors = [error]
+        };
 
     /// <summary>
     /// Creates a failed result from an exception.
@@ -340,7 +361,12 @@ public class Result : Result<object?>
     /// <param name="exception">The exception to extract error information from.</param>
     /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.GeneralError"/>.</returns>
     public static new Result Failure(Exception exception)
-        => (Result)Result<object?>.Failure(exception);
+        => new()
+        {
+            ErrorResult = ErrorResults.GeneralError,
+            Message = exception.Message,
+            Errors = [exception.InnerException?.Message ?? exception.Message]
+        };
 
     /// <summary>
     /// Creates a failed result with validation errors.
@@ -353,7 +379,12 @@ public class Result : Result<object?>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.ValidationError"/>.</returns>
     public static Result ValidationFailure(Dictionary<string, List<string>>? validationErrors = null, string? message = null)
-        => (Result)Result<object?>.ValidationFailure(validationErrors, message);
+        => new()
+        {
+            ErrorResult = ErrorResults.ValidationError,
+            Message = message,
+            ValidationErrors = validationErrors ?? []
+        };
 
     /// <summary>
     /// Creates a failed result with a single validation error message.
@@ -366,7 +397,12 @@ public class Result : Result<object?>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.ValidationError"/>.</returns>
     public static Result ValidationFailure(string validationError, string? message = null)
-        => (Result)Result<object?>.ValidationFailure(validationError, message);
+        => new()
+        {
+            ErrorResult = ErrorResults.ValidationError,
+            Message = message,
+            ValidationErrors = new Dictionary<string, List<string>> { { "General", [validationError] } }
+        };
 
     /// <summary>
     /// Creates a failed result indicating that the requested resource was not found.
@@ -374,7 +410,11 @@ public class Result : Result<object?>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.NotFound"/>.</returns>
     public static new Result NotFound(string? message = null)
-        => (Result)Result<object?>.NotFound(message);
+        => new()
+        {
+            ErrorResult = ErrorResults.NotFound,
+            Message = message,
+        };
 
     /// <summary>
     /// Creates a failed result indicating that the operation is unauthorized.
@@ -382,7 +422,11 @@ public class Result : Result<object?>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.Unauthorized"/>.</returns>
     public static new Result Unauthorized(string? message = null)
-        => (Result)Result<object?>.Unauthorized(message);
+       => new()
+       {
+           ErrorResult = ErrorResults.Unauthorized,
+           Message = message,
+       };
 
     /// <summary>
     /// Creates a failed result indicating that the operation is forbidden.
@@ -390,5 +434,9 @@ public class Result : Result<object?>
     /// <param name="message">An optional message providing additional context. Defaults to <c>null</c>.</param>
     /// <returns>A <see cref="Result"/> instance with <see cref="Result{T}.ErrorResult"/> set to <see cref="ErrorResults.Forbidden"/>.</returns>
     public static new Result Forbidden(string? message = null)
-        => (Result)Result<object?>.Forbidden(message);
+        => new()
+        {
+            ErrorResult = ErrorResults.Forbidden,
+            Message = message,
+        };
 }
